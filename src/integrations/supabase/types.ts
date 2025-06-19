@@ -9,7 +9,95 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          alpha_coins: number
+          created_at: string
+          id: string
+          level: number
+          updated_at: string
+          username: string | null
+          xp: number
+        }
+        Insert: {
+          alpha_coins?: number
+          created_at?: string
+          id: string
+          level?: number
+          updated_at?: string
+          username?: string | null
+          xp?: number
+        }
+        Update: {
+          alpha_coins?: number
+          created_at?: string
+          id?: string
+          level?: number
+          updated_at?: string
+          username?: string | null
+          xp?: number
+        }
+        Relationships: []
+      }
+      trades: {
+        Row: {
+          created_at: string
+          entry_date: string
+          entry_price: number
+          exit_date: string | null
+          exit_price: number | null
+          id: string
+          is_open: boolean
+          notes: string | null
+          profit_loss: number | null
+          quantity: number
+          symbol: string
+          trade_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entry_date: string
+          entry_price: number
+          exit_date?: string | null
+          exit_price?: number | null
+          id?: string
+          is_open?: boolean
+          notes?: string | null
+          profit_loss?: number | null
+          quantity: number
+          symbol: string
+          trade_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entry_date?: string
+          entry_price?: number
+          exit_date?: string | null
+          exit_price?: number | null
+          id?: string
+          is_open?: boolean
+          notes?: string | null
+          profit_loss?: number | null
+          quantity?: number
+          symbol?: string
+          trade_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trades_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
