@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import Dashboard from '@/components/Dashboard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, Award, Coins, BarChart3 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -19,7 +19,8 @@ const Index = () => {
   }
 
   if (user) {
-    return <Dashboard />;
+    navigate('/dashboard');
+    return null;
   }
 
   return (
