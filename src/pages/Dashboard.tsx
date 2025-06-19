@@ -3,11 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, Award, Coins, BarChart3, LogOut, Plus, Percent } from 'lucide-react';
+import { TrendingUp, Award, Coins, BarChart3, LogOut, Percent } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
+import TradeModal from '@/components/TradeModal';
 
 type Trade = Tables<'trades'>;
 type Profile = Tables<'profiles'>;
@@ -259,10 +260,7 @@ const Dashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white justify-start">
-                <Plus className="w-4 h-4 mr-2" />
-                Log New Trade
-              </Button>
+              <TradeModal onTradeCreated={fetchUserData} />
               <Button variant="outline" className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start">
                 <BarChart3 className="w-4 h-4 mr-2" />
                 View Analytics
