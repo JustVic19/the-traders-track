@@ -22,18 +22,27 @@ const Dashboard = () => {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
 
+  console.log('Dashboard: user =', user);
+  console.log('Dashboard: loading =', loading);
+
   const handleSignOut = async () => {
+    console.log('Signing out...');
     await signOut();
     navigate('/auth');
   };
 
   useEffect(() => {
+    console.log('Dashboard useEffect: user changed', user);
     if (user) {
       fetchUserData();
+    } else if (!loading) {
+      console.log('No user and not loading, redirecting to auth');
+      navigate('/auth');
     }
-  }, [user]);
+  }, [user, loading, navigate]);
 
   const fetchUserData = async () => {
+    console.log('Fetching user data for user:', user?.id);
     try {
       // Fetch user profile
       const { data: profileData, error: profileError } = await supabase
@@ -42,7 +51,11 @@ const Dashboard = () => {
         .eq('id', user?.id)
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        throw profileError;
+      }
+      console.log('Profile data:', profileData);
       setProfile(profileData);
 
       // Fetch user trades
@@ -52,7 +65,11 @@ const Dashboard = () => {
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
-      if (tradesError) throw tradesError;
+      if (tradesError) {
+        console.error('Trades error:', tradesError);
+        throw tradesError;
+      }
+      console.log('Trades data:', tradesData);
       setTrades(tradesData || []);
 
     } catch (error: any) {
@@ -84,6 +101,7 @@ const Dashboard = () => {
 
   const stats = calculateStats();
 
+  // Show loading state
   if (loading || statsLoading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -92,8 +110,8 @@ const Dashboard = () => {
     );
   }
 
+  // Redirect if no user
   if (!user) {
-    navigate('/auth');
     return null;
   }
 
