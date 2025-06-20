@@ -28,15 +28,49 @@ const Dashboard = () => {
 
   const fetchProfile = async () => {
     try {
+      console.log('Fetching profile for user:', user?.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user?.id)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      setProfile(data);
+      console.log('Profile fetch result:', { data, error });
+      
+      if (error) {
+        console.error('Profile fetch error:', error);
+        throw error;
+      }
+      
+      // If no profile exists, create one
+      if (!data && user?.id) {
+        console.log('No profile found, creating one...');
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            username: user.email,
+            level: 1,
+            xp: 0,
+            alpha_coins: 100,
+            skill_points: 0,
+            onboarding_completed: false
+          })
+          .select()
+          .single();
+        
+        if (createError) {
+          console.error('Profile creation error:', createError);
+          throw createError;
+        }
+        
+        console.log('Created new profile:', newProfile);
+        setProfile(newProfile);
+      } else {
+        setProfile(data);
+      }
     } catch (error: any) {
+      console.error('Error in fetchProfile:', error);
       toast({
         title: "Error",
         description: "Failed to load profile",
@@ -107,9 +141,9 @@ const Dashboard = () => {
               <User className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{profile?.level}</div>
+              <div className="text-2xl font-bold">{profile?.level || 1}</div>
               <p className="text-xs text-muted-foreground">
-                {profile?.xp}/1000 XP
+                {profile?.xp || 0}/1000 XP
               </p>
             </CardContent>
           </Card>
@@ -120,7 +154,7 @@ const Dashboard = () => {
               <Coins className="h-4 w-4 text-yellow-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{profile?.alpha_coins}</div>
+              <div className="text-2xl font-bold">{profile?.alpha_coins || 0}</div>
               <p className="text-xs text-muted-foreground">
                 Earn more by trading
               </p>
