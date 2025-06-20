@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
+import { useMissionProgress } from '@/hooks/useMissionProgress';
 import TradeModal from '@/components/TradeModal';
 
 type Trade = Tables<'trades'>;
@@ -17,6 +18,7 @@ const Dashboard = () => {
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { checkTradeBasedMissions } = useMissionProgress();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [trades, setTrades] = useState<Trade[]>([]);
@@ -71,6 +73,9 @@ const Dashboard = () => {
       }
       console.log('Trades data:', tradesData);
       setTrades(tradesData || []);
+
+      // Check and update mission progress
+      await checkTradeBasedMissions();
 
     } catch (error: any) {
       console.error('Error fetching user data:', error);
@@ -129,14 +134,24 @@ const Dashboard = () => {
               <p className="text-gray-400 text-sm">Welcome back, {profile?.username || user.email}</p>
             </div>
           </div>
-          <Button 
-            onClick={handleSignOut}
-            variant="outline"
-            className="border-gray-600 text-gray-300 hover:bg-gray-700"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex items-center space-x-4">
+            <Button
+              onClick={() => navigate('/missions')}
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            >
+              <Award className="w-4 h-4 mr-2" />
+              Missions
+            </Button>
+            <Button 
+              onClick={handleSignOut}
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -279,13 +294,17 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               <TradeModal onTradeCreated={fetchUserData} />
+              <Button
+                onClick={() => navigate('/missions')}
+                variant="outline"
+                className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start"
+              >
+                <Award className="w-4 h-4 mr-2" />
+                View Missions
+              </Button>
               <Button variant="outline" className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start">
                 <BarChart3 className="w-4 h-4 mr-2" />
                 View Analytics
-              </Button>
-              <Button variant="outline" className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start">
-                <Award className="w-4 h-4 mr-2" />
-                View Achievements
               </Button>
             </CardContent>
           </Card>
