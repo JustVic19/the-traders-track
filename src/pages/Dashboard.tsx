@@ -11,6 +11,7 @@ import { Tables } from '@/integrations/supabase/types';
 import { useMissionProgress } from '@/hooks/useMissionProgress';
 import TradeModal from '@/components/TradeModal';
 import AlphaCoinBalance from '@/components/AlphaCoinBalance';
+import OnboardingFlow from '@/components/OnboardingFlow';
 
 type Trade = Tables<'trades'>;
 type Profile = Tables<'profiles'>;
@@ -24,6 +25,7 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   console.log('Dashboard: user =', user);
   console.log('Dashboard: loading =', loading);
@@ -61,6 +63,12 @@ const Dashboard = () => {
       console.log('Profile data:', profileData);
       setProfile(profileData);
 
+      // Check if onboarding is needed
+      if (!profileData.onboarding_completed) {
+        setShowOnboarding(true);
+        return; // Don't fetch other data during onboarding
+      }
+
       // Fetch user trades
       const { data: tradesData, error: tradesError } = await supabase
         .from('trades')
@@ -90,6 +98,12 @@ const Dashboard = () => {
     }
   };
 
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    // Refresh user data after onboarding
+    fetchUserData();
+  };
+
   // Calculate performance stats
   const calculateStats = () => {
     const closedTrades = trades.filter(trade => !trade.is_open && trade.profit_loss !== null);
@@ -114,6 +128,35 @@ const Dashboard = () => {
     }
     return user?.email || 'Trader';
   };
+
+  // Get avatar display name
+  const getAvatarName = () => {
+    if (!profile?.trader_avatar) return null;
+    const avatarMap: Record<string, string> = {
+      'scalper_sam': 'Scalper Sam',
+      'swinging_sarah': 'Swinging Sarah',
+      'day_trader_dave': 'Day Trader Dave',
+      'swing_king_kyle': 'Swing King Kyle'
+    };
+    return avatarMap[profile.trader_avatar] || profile.trader_avatar;
+  };
+
+  // Get goal display name
+  const getGoalName = () => {
+    if (!profile?.trading_goal) return null;
+    const goalMap: Record<string, string> = {
+      'prop_firm_combine': 'Pass a Prop Firm Combine',
+      'consistent_profitability': 'Achieve Consistent Profitability',
+      'risk_management': 'Master Risk Management',
+      'skill_development': 'Develop Trading Skills'
+    };
+    return goalMap[profile.trading_goal] || profile.trading_goal;
+  };
+
+  // Show onboarding flow for new users
+  if (showOnboarding && user) {
+    return <OnboardingFlow userId={user.id} onComplete={handleOnboardingComplete} />;
+  }
 
   // Show loading state
   if (loading || statsLoading) {
@@ -140,7 +183,21 @@ const Dashboard = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">The Traders Track</h1>
-              <p className="text-gray-400 text-sm">Welcome back, {getDisplayName()}</p>
+              <div className="flex items-center space-x-2 text-gray-400 text-sm">
+                <span>Welcome back, {getDisplayName()}</span>
+                {getAvatarName() && (
+                  <>
+                    <span>•</span>
+                    <span className="text-blue-400">{getAvatarName()}</span>
+                  </>
+                )}
+                {getGoalName() && (
+                  <>
+                    <span>•</span>
+                    <span className="text-purple-400">{getGoalName()}</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
           <div className="flex items-center space-x-4">

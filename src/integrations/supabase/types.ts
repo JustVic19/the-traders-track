@@ -51,7 +51,10 @@ export type Database = {
           created_at: string
           id: string
           level: number
+          onboarding_completed: boolean
           skill_points: number
+          trader_avatar: string | null
+          trading_goal: string | null
           updated_at: string
           username: string | null
           xp: number
@@ -61,7 +64,10 @@ export type Database = {
           created_at?: string
           id: string
           level?: number
+          onboarding_completed?: boolean
           skill_points?: number
+          trader_avatar?: string | null
+          trading_goal?: string | null
           updated_at?: string
           username?: string | null
           xp?: number
@@ -71,7 +77,10 @@ export type Database = {
           created_at?: string
           id?: string
           level?: number
+          onboarding_completed?: boolean
           skill_points?: number
+          trader_avatar?: string | null
+          trading_goal?: string | null
           updated_at?: string
           username?: string | null
           xp?: number
