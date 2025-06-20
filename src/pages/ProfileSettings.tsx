@@ -7,8 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -36,13 +34,6 @@ const TRADER_AVATARS = [
   { id: 'forex_fiona', name: 'Forex Fiona', emoji: '🌍' },
 ];
 
-const THEMES = [
-  { id: 'default', name: 'Default Theme', description: 'Classic blue theme' },
-  { id: 'dark_blue_theme', name: 'Dark Blue', description: 'Professional dark blue' },
-  { id: 'green_theme', name: 'Trader Green', description: 'Market green theme' },
-  { id: 'gold_theme', name: 'Gold Premium', description: 'Luxurious gold theme' },
-];
-
 const ProfileSettings = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -59,24 +50,6 @@ const ProfileSettings = () => {
         .select('*')
         .eq('id', user.id)
         .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  // Fetch user purchases for customization options
-  const { data: purchases } = useQuery({
-    queryKey: ['user-purchases', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from('user_purchases')
-        .select(`
-          *,
-          store_items (*)
-        `)
-        .eq('user_id', user.id);
       if (error) throw error;
       return data;
     },
@@ -281,32 +254,10 @@ const ProfileSettings = () => {
                 <CardDescription>Customize your dashboard appearance</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {THEMES.map((theme) => {
-                    const isPurchased = purchases?.some(p => p.store_items?.item_key === theme.id) || theme.id === 'default';
-                    return (
-                      <div
-                        key={theme.id}
-                        className={`p-4 rounded-lg border-2 ${
-                          isPurchased
-                            ? 'border-slate-600 bg-slate-700/50'
-                            : 'border-slate-700 bg-slate-800/30 opacity-50'
-                        }`}
-                      >
-                        <h4 className="text-white font-medium">{theme.name}</h4>
-                        <p className="text-gray-400 text-sm mb-3">{theme.description}</p>
-                        {isPurchased ? (
-                          <Button size="sm" variant="outline">
-                            Apply Theme
-                          </Button>
-                        ) : (
-                          <Badge variant="outline" className="text-gray-500">
-                            Purchase in Store
-                          </Badge>
-                        )}
-                      </div>
-                    );
-                  })}
+                <div className="text-gray-400 p-4 text-center">
+                  <Palette className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>Custom themes will be available once the store system is implemented.</p>
+                  <p className="text-sm mt-2">For now, enjoy the default dark theme!</p>
                 </div>
               </CardContent>
             </Card>
