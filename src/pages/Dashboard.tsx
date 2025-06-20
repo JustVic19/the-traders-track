@@ -107,6 +107,14 @@ const Dashboard = () => {
 
   const stats = calculateStats();
 
+  // Get display name (username or email)
+  const getDisplayName = () => {
+    if (profile?.username) {
+      return profile.username;
+    }
+    return user?.email || 'Trader';
+  };
+
   // Show loading state
   if (loading || statsLoading) {
     return (
@@ -132,7 +140,7 @@ const Dashboard = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">The Traders Track</h1>
-              <p className="text-gray-400 text-sm">Welcome back, {profile?.username || user.email}</p>
+              <p className="text-gray-400 text-sm">Welcome back, {getDisplayName()}</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">

@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -24,7 +25,10 @@ const Auth = () => {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            username: username || email.split('@')[0] // Use username if provided, otherwise use email prefix
+          }
         }
       });
       
@@ -142,6 +146,15 @@ const Auth = () => {
             <TabsContent value="signup" className="mt-6">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-4">
+                  <div>
+                    <Input
+                      type="text"
+                      placeholder="Username (optional)"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
                   <div>
                     <Input
                       type="email"
