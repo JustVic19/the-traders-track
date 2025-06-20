@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Trophy, Target, Calendar, Award, ArrowLeft } from 'lucide-react';
+import { Trophy, Target, Calendar, Award, ArrowLeft, Coins } from 'lucide-react';
+import AlphaCoinBalance from '@/components/AlphaCoinBalance';
 
 type Mission = Tables<'missions'>;
 type UserMission = Tables<'user_missions'>;
@@ -89,6 +90,9 @@ const Missions = () => {
     }
 
     try {
+      // Calculate Alpha Coins reward (50% of XP reward)
+      const alphaCoinsReward = Math.floor(mission.xp_reward * 0.5);
+
       // Update user mission as claimed
       const { error: updateError } = await supabase
         .from('user_missions')
@@ -100,11 +104,12 @@ const Missions = () => {
 
       if (updateError) throw updateError;
 
-      // Update user's XP
+      // Update user's XP and Alpha Coins
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
-          xp: (profile?.xp || 0) + mission.xp_reward
+          xp: (profile?.xp || 0) + mission.xp_reward,
+          alpha_coins: (profile?.alpha_coins || 0) + alphaCoinsReward
         })
         .eq('id', user?.id);
 
@@ -112,7 +117,7 @@ const Missions = () => {
 
       toast({
         title: "Reward Claimed!",
-        description: `You earned ${mission.xp_reward} XP for completing "${mission.title}"`,
+        description: `You earned ${mission.xp_reward} XP and ${alphaCoinsReward} Alpha Coins for completing "${mission.title}"`,
       });
 
       // Refresh data
@@ -145,6 +150,7 @@ const Missions = () => {
     const progressPercentage = Math.min((progress / mission.target_value) * 100, 100);
     const isCompleted = mission.userProgress?.is_completed || false;
     const isClaimed = mission.userProgress?.is_claimed || false;
+    const alphaCoinsReward = Math.floor(mission.xp_reward * 0.5);
 
     return (
       <Card key={mission.id} className="bg-gray-800 border-gray-700">
@@ -160,9 +166,13 @@ const Missions = () => {
               </CardDescription>
             </div>
           </div>
-          <div className="text-right">
+          <div className="text-right space-y-1">
             <div className="text-yellow-500 font-bold text-sm">
               +{mission.xp_reward} XP
+            </div>
+            <div className="flex items-center text-yellow-500 text-xs">
+              <Coins className="w-3 h-3 mr-1" />
+              +{alphaCoinsReward}
             </div>
           </div>
         </CardHeader>
@@ -218,25 +228,28 @@ const Missions = () => {
     <div className="min-h-screen bg-gray-900">
       {/* Header */}
       <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
-        <div className="flex items-center space-x-4">
-          <Button
-            onClick={() => navigate('/dashboard')}
-            variant="ghost"
-            size="sm"
-            className="text-gray-300 hover:text-white hover:bg-gray-700"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </Button>
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-              <Trophy className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Missions & Achievements</h1>
-              <p className="text-gray-400 text-sm">Complete missions to earn XP and level up</p>
+            <Button
+              onClick={() => navigate('/dashboard')}
+              variant="ghost"
+              size="sm"
+              className="text-gray-300 hover:text-white hover:bg-gray-700"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <Trophy className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Missions & Achievements</h1>
+                <p className="text-gray-400 text-sm">Complete missions to earn XP and Alpha Coins</p>
+              </div>
             </div>
           </div>
+          <AlphaCoinBalance balance={profile?.alpha_coins || 0} />
         </div>
       </header>
 

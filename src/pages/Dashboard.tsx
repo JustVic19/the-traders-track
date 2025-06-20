@@ -3,13 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, Award, Coins, BarChart3, LogOut, Percent } from 'lucide-react';
+import { TrendingUp, Award, Coins, BarChart3, LogOut, Percent, ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
 import { useMissionProgress } from '@/hooks/useMissionProgress';
 import TradeModal from '@/components/TradeModal';
+import AlphaCoinBalance from '@/components/AlphaCoinBalance';
 
 type Trade = Tables<'trades'>;
 type Profile = Tables<'profiles'>;
@@ -135,6 +136,15 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex items-center space-x-4">
+            <AlphaCoinBalance balance={profile?.alpha_coins || 0} />
+            <Button
+              onClick={() => navigate('/store')}
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Store
+            </Button>
             <Button
               onClick={() => navigate('/missions')}
               variant="outline"
@@ -294,6 +304,14 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               <TradeModal onTradeCreated={fetchUserData} />
+              <Button
+                onClick={() => navigate('/store')}
+                variant="outline"
+                className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start"
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Browse Store
+              </Button>
               <Button
                 onClick={() => navigate('/missions')}
                 variant="outline"
