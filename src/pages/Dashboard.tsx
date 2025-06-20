@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, Award, Coins, BarChart3, LogOut, Percent, ShoppingCart } from 'lucide-react';
+import { TrendingUp, Award, Coins, BarChart3, LogOut, Percent, ShoppingCart, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -146,6 +146,14 @@ const Dashboard = () => {
           <div className="flex items-center space-x-4">
             <AlphaCoinBalance balance={profile?.alpha_coins || 0} />
             <Button
+              onClick={() => navigate('/skills')}
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            >
+              <Target className="w-4 h-4 mr-2" />
+              Skill Tree
+            </Button>
+            <Button
               onClick={() => navigate('/store')}
               variant="outline"
               className="border-gray-600 text-gray-300 hover:bg-gray-700"
@@ -216,7 +224,7 @@ const Dashboard = () => {
         </div>
 
         {/* User Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-300">Level</CardTitle>
@@ -247,6 +255,17 @@ const Dashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold text-white">{profile?.alpha_coins || 0}</div>
               <p className="text-xs text-gray-400">Reward Currency</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-300">Skill Points</CardTitle>
+              <Target className="w-4 h-4 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{profile?.skill_points || 0}</div>
+              <p className="text-xs text-gray-400">Available to spend</p>
             </CardContent>
           </Card>
         </div>
@@ -312,6 +331,14 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               <TradeModal onTradeCreated={fetchUserData} />
+              <Button
+                onClick={() => navigate('/skills')}
+                variant="outline"
+                className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start"
+              >
+                <Target className="w-4 h-4 mr-2" />
+                View Skill Tree
+              </Button>
               <Button
                 onClick={() => navigate('/store')}
                 variant="outline"

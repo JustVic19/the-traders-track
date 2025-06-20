@@ -51,6 +51,7 @@ export type Database = {
           created_at: string
           id: string
           level: number
+          skill_points: number
           updated_at: string
           username: string | null
           xp: number
@@ -60,6 +61,7 @@ export type Database = {
           created_at?: string
           id: string
           level?: number
+          skill_points?: number
           updated_at?: string
           username?: string | null
           xp?: number
@@ -69,6 +71,7 @@ export type Database = {
           created_at?: string
           id?: string
           level?: number
+          skill_points?: number
           updated_at?: string
           username?: string | null
           xp?: number
@@ -177,6 +180,38 @@ export type Database = {
             columns: ["mission_id"]
             isOneToOne: false
             referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_skills: {
+        Row: {
+          created_at: string
+          id: string
+          skill_key: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          skill_key: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          skill_key?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_skills_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
