@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -91,10 +90,13 @@ const Store = () => {
 
       if (profileError) throw profileError;
 
-      // Combine items with purchase status
-      const itemsWithPurchases = (itemsData as StoreItem[] || []).map((item: StoreItem) => ({
+      // Combine items with purchase status - using proper type conversion
+      const storeItemsArray = (itemsData as unknown as StoreItem[]) || [];
+      const purchasesArray = (purchasesData as unknown as UserPurchase[]) || [];
+      
+      const itemsWithPurchases = storeItemsArray.map((item: StoreItem) => ({
         ...item,
-        userPurchase: (purchasesData as UserPurchase[] || []).find(p => p.store_item_id === item.id)
+        userPurchase: purchasesArray.find(p => p.store_item_id === item.id)
       }));
 
       setStoreItems(itemsWithPurchases);
