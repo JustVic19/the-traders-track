@@ -59,38 +59,28 @@ const Store = () => {
 
   const fetchStoreData = async () => {
     try {
-      // Fetch store items using direct query
+      // Fetch store items using direct query with type assertion
       const { data: itemsData, error: itemsError } = await supabase
-        .rpc('get_store_items')
-        .then(async (result) => {
-          // Fallback to direct query if RPC doesn't exist
-          if (result.error) {
-            return await supabase
-              .from('store_items' as any)
-              .select('*')
-              .eq('is_available', true)
-              .order('price', { ascending: true });
-          }
-          return result;
-        });
+        .from('store_items' as any)
+        .select('*')
+        .eq('is_available', true)
+        .order('price', { ascending: true });
 
-      if (itemsError) throw itemsError;
+      if (itemsError) {
+        console.error('Store items error:', itemsError);
+        throw itemsError;
+      }
 
-      // Fetch user purchases using direct query
+      // Fetch user purchases using direct query with type assertion
       const { data: purchasesData, error: purchasesError } = await supabase
-        .rpc('get_user_purchases', { user_id: user?.id })
-        .then(async (result) => {
-          // Fallback to direct query if RPC doesn't exist
-          if (result.error) {
-            return await supabase
-              .from('user_purchases' as any)
-              .select('*')
-              .eq('user_id', user?.id);
-          }
-          return result;
-        });
+        .from('user_purchases' as any)
+        .select('*')
+        .eq('user_id', user?.id);
 
-      if (purchasesError) throw purchasesError;
+      if (purchasesError) {
+        console.error('User purchases error:', purchasesError);
+        throw purchasesError;
+      }
 
       // Fetch user profile
       const { data: profileData, error: profileError } = await supabase
@@ -102,9 +92,9 @@ const Store = () => {
       if (profileError) throw profileError;
 
       // Combine items with purchase status
-      const itemsWithPurchases = (itemsData || []).map((item: StoreItem) => ({
+      const itemsWithPurchases = (itemsData as StoreItem[] || []).map((item: StoreItem) => ({
         ...item,
-        userPurchase: (purchasesData as UserPurchase[])?.find(p => p.store_item_id === item.id)
+        userPurchase: (purchasesData as UserPurchase[] || []).find(p => p.store_item_id === item.id)
       }));
 
       setStoreItems(itemsWithPurchases);
