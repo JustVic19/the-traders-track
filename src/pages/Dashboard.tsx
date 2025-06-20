@@ -1,145 +1,425 @@
-import React from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import AlphaCoinBalance from '@/components/AlphaCoinBalance';
-import { Progress } from '@/components/ui/progress';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Star, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
-const TRADER_AVATARS = [
-  { id: 'scalper_sam', name: 'Scalper Sam', emoji: '⚡' },
-  { id: 'swinging_sarah', name: 'Swinging Sarah', emoji: '📈' },
-  { id: 'day_trader_dan', name: 'Day Trader Dan', emoji: '💼' },
-  { id: 'crypto_chris', name: 'Crypto Chris', emoji: '₿' },
-  { id: 'forex_fiona', name: 'Forex Fiona', emoji: '🌍' },
-];
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { TrendingUp, Award, Coins, BarChart3, LogOut, Percent, ShoppingCart, Target } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Tables } from '@/integrations/supabase/types';
+import { useMissionProgress } from '@/hooks/useMissionProgress';
+import TradeModal from '@/components/TradeModal';
+import AlphaCoinBalance from '@/components/AlphaCoinBalance';
+import OnboardingFlow from '@/components/OnboardingFlow';
+
+type Trade = Tables<'trades'>;
+type Profile = Tables<'profiles'>;
 
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { checkTradeBasedMissions } = useMissionProgress();
 
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ['profile', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data, error } = await supabase
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  console.log('Dashboard: user =', user);
+  console.log('Dashboard: loading =', loading);
+
+  const handleSignOut = async () => {
+    console.log('Signing out...');
+    await signOut();
+    navigate('/auth');
+  };
+
+  useEffect(() => {
+    console.log('Dashboard useEffect: user changed', user);
+    if (user) {
+      fetchUserData();
+    } else if (!loading) {
+      console.log('No user and not loading, redirecting to auth');
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  const fetchUserData = async () => {
+    console.log('Fetching user data for user:', user?.id);
+    try {
+      // Fetch user profile
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', user?.id)
         .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
 
-  const getAvatarDisplay = (avatarId: string | null) => {
-    const avatar = TRADER_AVATARS.find(a => a.id === avatarId);
-    return avatar || TRADER_AVATARS[0];
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        throw profileError;
+      }
+      console.log('Profile data:', profileData);
+      setProfile(profileData);
+
+      // Check if onboarding is needed
+      if (!profileData.onboarding_completed) {
+        setShowOnboarding(true);
+        return; // Don't fetch other data during onboarding
+      }
+
+      // Fetch user trades
+      const { data: tradesData, error: tradesError } = await supabase
+        .from('trades')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (tradesError) {
+        console.error('Trades error:', tradesError);
+        throw tradesError;
+      }
+      console.log('Trades data:', tradesData);
+      setTrades(tradesData || []);
+
+      // Check and update mission progress
+      await checkTradeBasedMissions();
+
+    } catch (error: any) {
+      console.error('Error fetching user data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load user data",
+        variant: "destructive",
+      });
+    } finally {
+      setStatsLoading(false);
+    }
   };
 
-  const calculateLevelProgress = (xp: number, level: number) => {
-    const xpForCurrentLevel = (level - 1) * 100;
-    const xpForNextLevel = level * 100;
-    const progressInCurrentLevel = xp - xpForCurrentLevel;
-    const xpNeededForLevel = xpForNextLevel - xpForCurrentLevel;
-    return Math.max(0, Math.min(100, (progressInCurrentLevel / xpNeededForLevel) * 100));
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    // Refresh user data after onboarding
+    fetchUserData();
   };
 
-  if (isLoading) {
+  // Calculate performance stats
+  const calculateStats = () => {
+    const closedTrades = trades.filter(trade => !trade.is_open && trade.profit_loss !== null);
+    const totalTrades = trades.length;
+    const totalPnL = closedTrades.reduce((sum, trade) => sum + (trade.profit_loss || 0), 0);
+    const winningTrades = closedTrades.filter(trade => (trade.profit_loss || 0) > 0);
+    const winRate = closedTrades.length > 0 ? (winningTrades.length / closedTrades.length) * 100 : 0;
+
+    return {
+      totalPnL,
+      winRate,
+      totalTrades
+    };
+  };
+
+  const stats = calculateStats();
+
+  // Get display name (username or email)
+  const getDisplayName = () => {
+    if (profile?.username) {
+      return profile.username;
+    }
+    return user?.email || 'Trader';
+  };
+
+  // Get avatar display name
+  const getAvatarName = () => {
+    if (!profile?.trader_avatar) return null;
+    const avatarMap: Record<string, string> = {
+      'scalper_sam': 'Scalper Sam',
+      'swinging_sarah': 'Swinging Sarah',
+      'day_trader_dave': 'Day Trader Dave',
+      'swing_king_kyle': 'Swing King Kyle'
+    };
+    return avatarMap[profile.trader_avatar] || profile.trader_avatar;
+  };
+
+  // Get goal display name
+  const getGoalName = () => {
+    if (!profile?.trading_goal) return null;
+    const goalMap: Record<string, string> = {
+      'prop_firm_combine': 'Pass a Prop Firm Combine',
+      'consistent_profitability': 'Achieve Consistent Profitability',
+      'risk_management': 'Master Risk Management',
+      'skill_development': 'Develop Trading Skills'
+    };
+    return goalMap[profile.trading_goal] || profile.trading_goal;
+  };
+
+  // Show onboarding flow for new users
+  if (showOnboarding && user) {
+    return <OnboardingFlow userId={user.id} onComplete={handleOnboardingComplete} />;
+  }
+
+  // Show loading state
+  if (loading || statsLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-lg text-white">Loading dashboard...</div>
       </div>
     );
   }
 
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-white">No profile data found.</div>
-      </div>
-    );
+  // Redirect if no user
+  if (!user) {
+    return null;
   }
-
-  const currentAvatar = getAvatarDisplay(profile?.trader_avatar);
-  const levelProgress = calculateLevelProgress(profile?.xp || 0, profile?.level || 1);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Trading Dashboard
-            </h1>
-            <p className="text-gray-300">Welcome back, {currentAvatar.name}!</p>
+    <div className="min-h-screen bg-gray-900">
+      {/* Header */}
+      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+              <span className="text-lg font-bold text-white">TT</span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">The Traders Track</h1>
+              <div className="flex items-center space-x-2 text-gray-400 text-sm">
+                <span>Welcome back, {getDisplayName()}</span>
+                {getAvatarName() && (
+                  <>
+                    <span>•</span>
+                    <span className="text-blue-400">{getAvatarName()}</span>
+                  </>
+                )}
+                {getGoalName() && (
+                  <>
+                    <span>•</span>
+                    <span className="text-purple-400">{getGoalName()}</span>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
-          
           <div className="flex items-center space-x-4">
             <AlphaCoinBalance balance={profile?.alpha_coins || 0} />
-            <div className="flex items-center space-x-2 bg-gray-700 px-3 py-2 rounded-lg">
-              <Star className="w-4 h-4 text-yellow-500" />
-              <span className="text-white font-bold">{profile?.skill_points || 0}</span>
-              <span className="text-gray-400 text-sm">Skill Points</span>
-            </div>
-            <Link to="/profile">
-              <Button variant="outline" size="sm" className="text-white border-gray-600 hover:bg-gray-700">
-                <User className="w-4 h-4 mr-2" />
-                Profile
-              </Button>
-            </Link>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={signOut}
-              className="text-white border-gray-600 hover:bg-gray-700"
+            <Button
+              onClick={() => navigate('/skills')}
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
             >
+              <Target className="w-4 h-4 mr-2" />
+              Skill Tree
+            </Button>
+            <Button
+              onClick={() => navigate('/store')}
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Store
+            </Button>
+            <Button
+              onClick={() => navigate('/missions')}
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            >
+              <Award className="w-4 h-4 mr-2" />
+              Missions
+            </Button>
+            <Button 
+              onClick={handleSignOut}
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
               Sign Out
             </Button>
           </div>
         </div>
+      </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white">Level</CardTitle>
-              <CardDescription className="text-gray-400">Current Level</CardDescription>
+      {/* Main Content */}
+      <main className="container mx-auto px-6 py-8">
+        {/* Performance Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-300">Total P/L</CardTitle>
+              <TrendingUp className="w-4 h-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-bold text-white">{profile?.level || 1}</div>
+              <div className={`text-2xl font-bold ${stats.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                ${stats.totalPnL.toFixed(2)}
+              </div>
+              <p className="text-xs text-gray-400">From closed trades</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white">Experience</CardTitle>
-              <CardDescription className="text-gray-400">Progress to next level</CardDescription>
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-300">Win Rate</CardTitle>
+              <Percent className="w-4 h-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{profile?.xp || 0} / {(profile?.level || 1) * 100} XP</div>
-              <Progress value={levelProgress} className="mt-2" />
+              <div className="text-2xl font-bold text-white">
+                {stats.winRate.toFixed(1)}%
+              </div>
+              <p className="text-xs text-gray-400">Winning trades percentage</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white">Alpha Coins</CardTitle>
-              <CardDescription className="text-gray-400">In-game currency</CardDescription>
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-300">Total Trades</CardTitle>
+              <BarChart3 className="w-4 h-4 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <AlphaCoinBalance balance={profile?.alpha_coins || 0} className="bg-transparent p-0" />
+              <div className="text-2xl font-bold text-white">{stats.totalTrades}</div>
+              <p className="text-xs text-gray-400">Trades logged</p>
             </CardContent>
           </Card>
         </div>
 
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold text-white mb-4">Recent Trades</h2>
-          <p className="text-gray-300">Track your recent trading activity here.</p>
+        {/* User Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-300">Level</CardTitle>
+              <Award className="w-4 h-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{profile?.level || 1}</div>
+              <p className="text-xs text-gray-400">Trader Level</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-300">XP</CardTitle>
+              <TrendingUp className="w-4 h-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{profile?.xp || 0}</div>
+              <p className="text-xs text-gray-400">Experience Points</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-300">Alpha Coins</CardTitle>
+              <Coins className="w-4 h-4 text-yellow-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{profile?.alpha_coins || 0}</div>
+              <p className="text-xs text-gray-400">Reward Currency</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-300">Skill Points</CardTitle>
+              <Target className="w-4 h-4 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{profile?.skill_points || 0}</div>
+              <p className="text-xs text-gray-400">Available to spend</p>
+            </CardContent>
+          </Card>
         </div>
-      </div>
+
+        {/* Recent Trades */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white">Recent Trades</CardTitle>
+              <CardDescription className="text-gray-400">
+                Your latest trading activity
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {trades.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>No trades recorded yet</p>
+                  <p className="text-sm">Start logging your trades to see them here!</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {trades.slice(0, 5).map((trade) => (
+                    <div key={trade.id} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className={`px-2 py-1 rounded text-xs font-medium ${
+                          trade.trade_type === 'buy' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                        }`}>
+                          {trade.trade_type.toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-medium text-white">{trade.symbol}</p>
+                          <p className="text-sm text-gray-400">
+                            {trade.quantity} @ ${trade.entry_price}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className={`px-2 py-1 rounded text-xs ${
+                          trade.is_open ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300'
+                        }`}>
+                          {trade.is_open ? 'Open' : 'Closed'}
+                        </div>
+                        {!trade.is_open && trade.profit_loss !== null && (
+                          <p className={`text-sm mt-1 ${trade.profit_loss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            ${trade.profit_loss.toFixed(2)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white">Quick Actions</CardTitle>
+              <CardDescription className="text-gray-400">
+                Common actions to get you started
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <TradeModal onTradeCreated={fetchUserData} />
+              <Button
+                onClick={() => navigate('/skills')}
+                variant="outline"
+                className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start"
+              >
+                <Target className="w-4 h-4 mr-2" />
+                View Skill Tree
+              </Button>
+              <Button
+                onClick={() => navigate('/store')}
+                variant="outline"
+                className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start"
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Browse Store
+              </Button>
+              <Button
+                onClick={() => navigate('/missions')}
+                variant="outline"
+                className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start"
+              >
+                <Award className="w-4 h-4 mr-2" />
+                View Missions
+              </Button>
+              <Button variant="outline" className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start">
+                <BarChart3 className="w-4 h-4 mr-2" />
+                View Analytics
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
     </div>
   );
 };
