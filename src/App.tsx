@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Missions from "./pages/Missions";
 import Store from "./pages/Store";
 import SkillTree from "./pages/SkillTree";
+import ProfileSettings from "./pages/ProfileSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => {
             <Route path="/missions" element={<Missions />} />
             <Route path="/store" element={<Store />} />
             <Route path="/skills" element={<SkillTree />} />
+            <Route path="/profile" element={<ProfileSettings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
