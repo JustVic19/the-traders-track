@@ -11,8 +11,28 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShoppingCart, ArrowLeft, Crown, Palette, User, Coins } from 'lucide-react';
 
-type StoreItem = Tables<'store_items'>;
-type UserPurchase = Tables<'user_purchases'>;
+// Define types for the new tables since they're not in the generated types yet
+interface StoreItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: 'avatar' | 'theme' | 'cosmetic';
+  item_key: string;
+  image_url?: string;
+  is_available: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface UserPurchase {
+  id: string;
+  user_id: string;
+  store_item_id: string;
+  is_equipped: boolean;
+  purchased_at: string;
+}
+
 type Profile = Tables<'profiles'>;
 
 interface StoreItemWithPurchase extends StoreItem {
@@ -39,20 +59,36 @@ const Store = () => {
 
   const fetchStoreData = async () => {
     try {
-      // Fetch store items
+      // Fetch store items using direct query
       const { data: itemsData, error: itemsError } = await supabase
-        .from('store_items')
-        .select('*')
-        .eq('is_available', true)
-        .order('price', { ascending: true });
+        .rpc('get_store_items')
+        .then(async (result) => {
+          // Fallback to direct query if RPC doesn't exist
+          if (result.error) {
+            return await supabase
+              .from('store_items' as any)
+              .select('*')
+              .eq('is_available', true)
+              .order('price', { ascending: true });
+          }
+          return result;
+        });
 
       if (itemsError) throw itemsError;
 
-      // Fetch user purchases
+      // Fetch user purchases using direct query
       const { data: purchasesData, error: purchasesError } = await supabase
-        .from('user_purchases')
-        .select('*')
-        .eq('user_id', user?.id);
+        .rpc('get_user_purchases', { user_id: user?.id })
+        .then(async (result) => {
+          // Fallback to direct query if RPC doesn't exist
+          if (result.error) {
+            return await supabase
+              .from('user_purchases' as any)
+              .select('*')
+              .eq('user_id', user?.id);
+          }
+          return result;
+        });
 
       if (purchasesError) throw purchasesError;
 
@@ -66,9 +102,9 @@ const Store = () => {
       if (profileError) throw profileError;
 
       // Combine items with purchase status
-      const itemsWithPurchases = itemsData.map(item => ({
+      const itemsWithPurchases = (itemsData || []).map((item: StoreItem) => ({
         ...item,
-        userPurchase: purchasesData?.find(p => p.store_item_id === item.id)
+        userPurchase: (purchasesData as UserPurchase[])?.find(p => p.store_item_id === item.id)
       }));
 
       setStoreItems(itemsWithPurchases);
@@ -107,9 +143,9 @@ const Store = () => {
 
       if (profileError) throw profileError;
 
-      // 2. Add purchase record
+      // 2. Add purchase record using direct insert
       const { error: purchaseError } = await supabase
-        .from('user_purchases')
+        .from('user_purchases' as any)
         .insert({
           user_id: user?.id,
           store_item_id: item.id,
