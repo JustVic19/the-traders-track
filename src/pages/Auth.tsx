@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { Github, Mail } from 'lucide-react';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -75,6 +76,25 @@ const Auth = () => {
     }
   };
 
+  const handleSocialLogin = async (provider: 'google' | 'github') => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+      
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-gray-900 to-purple-900/20"></div>
@@ -110,6 +130,35 @@ const Auth = () => {
             </TabsList>
             
             <TabsContent value="signin" className="mt-6">
+              {/* Social Login Buttons */}
+              <div className="space-y-3 mb-6">
+                <Button 
+                  onClick={() => handleSocialLogin('google')}
+                  variant="outline"
+                  className="w-full bg-white hover:bg-gray-50 text-gray-900 border-gray-300"
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Continue with Google
+                </Button>
+                <Button 
+                  onClick={() => handleSocialLogin('github')}
+                  variant="outline"
+                  className="w-full bg-gray-700 hover:bg-gray-600 text-white border-gray-600"
+                >
+                  <Github className="w-4 h-4 mr-2" />
+                  Continue with GitHub
+                </Button>
+              </div>
+
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-600" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-gray-800 px-2 text-gray-400">Or continue with email</span>
+                </div>
+              </div>
+
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-4">
                   <div>
@@ -144,6 +193,35 @@ const Auth = () => {
             </TabsContent>
             
             <TabsContent value="signup" className="mt-6">
+              {/* Social Login Buttons */}
+              <div className="space-y-3 mb-6">
+                <Button 
+                  onClick={() => handleSocialLogin('google')}
+                  variant="outline"
+                  className="w-full bg-white hover:bg-gray-50 text-gray-900 border-gray-300"
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Continue with Google
+                </Button>
+                <Button 
+                  onClick={() => handleSocialLogin('github')}
+                  variant="outline"
+                  className="w-full bg-gray-700 hover:bg-gray-600 text-white border-gray-600"
+                >
+                  <Github className="w-4 h-4 mr-2" />
+                  Continue with GitHub
+                </Button>
+              </div>
+
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-600" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-gray-800 px-2 text-gray-400">Or continue with email</span>
+                </div>
+              </div>
+              
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-4">
                   <div>
