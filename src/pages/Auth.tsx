@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { Github, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -76,7 +75,7 @@ const Auth = () => {
     }
   };
 
-  const handleSocialLogin = async (provider: 'google' | 'github') => {
+  const handleSocialLogin = async (provider: 'google') => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
@@ -130,7 +129,7 @@ const Auth = () => {
             </TabsList>
             
             <TabsContent value="signin" className="mt-6">
-              {/* Social Login Buttons */}
+              {/* Social Login Button */}
               <div className="space-y-3 mb-6">
                 <Button 
                   onClick={() => handleSocialLogin('google')}
@@ -139,14 +138,6 @@ const Auth = () => {
                 >
                   <Mail className="w-4 h-4 mr-2" />
                   Continue with Google
-                </Button>
-                <Button 
-                  onClick={() => handleSocialLogin('github')}
-                  variant="outline"
-                  className="w-full bg-gray-700 hover:bg-gray-600 text-white border-gray-600"
-                >
-                  <Github className="w-4 h-4 mr-2" />
-                  Continue with GitHub
                 </Button>
               </div>
 
@@ -193,7 +184,7 @@ const Auth = () => {
             </TabsContent>
             
             <TabsContent value="signup" className="mt-6">
-              {/* Social Login Buttons */}
+              {/* Social Login Button */}
               <div className="space-y-3 mb-6">
                 <Button 
                   onClick={() => handleSocialLogin('google')}
@@ -202,14 +193,6 @@ const Auth = () => {
                 >
                   <Mail className="w-4 h-4 mr-2" />
                   Continue with Google
-                </Button>
-                <Button 
-                  onClick={() => handleSocialLogin('github')}
-                  variant="outline"
-                  className="w-full bg-gray-700 hover:bg-gray-600 text-white border-gray-600"
-                >
-                  <Github className="w-4 h-4 mr-2" />
-                  Continue with GitHub
                 </Button>
               </div>
 
