@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { BarChart3, Target, Trophy, Store, Settings, LogOut, Coins, Star, Focus } from 'lucide-react';
@@ -38,14 +39,11 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
             </div>
             <h1 className="text-xl font-bold text-white">The Traders Track</h1>
           </div>
-          <div className="text-sm text-gray-300 mt-6">
-            Welcome, {profile?.username || 'Trader'}
-          </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="p-4 pt-6" style={{ backgroundColor: '#101623' }}>
-        <SidebarMenu className="space-y-1">
+      <SidebarContent className="p-4 pt-2" style={{ backgroundColor: '#101623' }}>
+        <SidebarMenu className="space-y-1 mb-6">
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.path}>
               <SidebarMenuButton 
@@ -66,6 +64,31 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
       </SidebarContent>
 
       <SidebarFooter className="p-4" style={{ backgroundColor: '#101623' }}>
+        {/* Welcome Message and Actions Section */}
+        <div className="bg-gray-900 rounded-lg p-3 mb-4">
+          <div className="text-sm text-gray-300 mb-3 text-center">
+            Welcome, {profile?.username || 'Trader'}
+          </div>
+          <div className="space-y-2">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white"
+              onClick={() => navigate('/settings')}
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white"
+              onClick={handleSignOut}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+        </div>
+
         {/* User Information Section */}
         <div className="bg-gray-900 rounded-lg p-3 mb-4">
           <div className="space-y-2">
@@ -95,28 +118,6 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
               <span className="text-sm font-medium text-purple-400">{profile?.focus_points || 0}</span>
             </div>
           </div>
-        </div>
-
-        <Separator className="mb-4 bg-gray-700" />
-        
-        {/* Settings and Sign Out */}
-        <div className="space-y-2">
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white"
-            onClick={() => navigate('/settings')}
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            Settings
-          </Button>
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white"
-            onClick={handleSignOut}
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
         </div>
       </SidebarFooter>
     </Sidebar>
