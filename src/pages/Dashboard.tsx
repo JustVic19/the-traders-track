@@ -1,25 +1,25 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, Award, Coins, BarChart3, LogOut, Percent, ShoppingCart, Target } from 'lucide-react';
+import { TrendingUp, Award, BarChart3, Percent, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
 import { useMissionProgress } from '@/hooks/useMissionProgress';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AlphaCoinBalance from '@/components/AlphaCoinBalance';
 import OnboardingFlow from '@/components/OnboardingFlow';
 import EquityCurveChart from '@/components/EquityCurveChart';
 import PerformanceCalendar from '@/components/PerformanceCalendar';
 import TradingSidebar from '@/components/TradingSidebar';
+import AppSidebar from '@/components/AppSidebar';
 
 type Trade = Tables<'trades'>;
 type Profile = Tables<'profiles'>;
 
 const Dashboard = () => {
-  const { user, signOut, loading } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { checkTradeBasedMissions } = useMissionProgress();
@@ -31,12 +31,6 @@ const Dashboard = () => {
 
   console.log('Dashboard: user =', user);
   console.log('Dashboard: loading =', loading);
-
-  const handleSignOut = async () => {
-    console.log('Signing out...');
-    await signOut();
-    navigate('/auth');
-  };
 
   useEffect(() => {
     console.log('Dashboard useEffect: user changed', user);
@@ -137,7 +131,6 @@ const Dashboard = () => {
   };
 
   const calculateTTrackScore = (winRate: number, profitFactor: number, totalTrades: number) => {
-    // Proprietary scoring algorithm
     let score = 0;
     
     // Win rate component (0-40 points)
@@ -173,38 +166,6 @@ const Dashboard = () => {
 
   const stats = calculateStats();
 
-  // Get display name (username or email)
-  const getDisplayName = () => {
-    if (profile?.username) {
-      return profile.username;
-    }
-    return user?.email || 'Trader';
-  };
-
-  // Get avatar display name
-  const getAvatarName = () => {
-    if (!profile?.trader_avatar) return null;
-    const avatarMap: Record<string, string> = {
-      'scalper_sam': 'Scalper Sam',
-      'swinging_sarah': 'Swinging Sarah',
-      'day_trader_dave': 'Day Trader Dave',
-      'swing_king_kyle': 'Swing King Kyle'
-    };
-    return avatarMap[profile.trader_avatar] || profile.trader_avatar;
-  };
-
-  // Get goal display name
-  const getGoalName = () => {
-    if (!profile?.trading_goal) return null;
-    const goalMap: Record<string, string> = {
-      'prop_firm_combine': 'Pass a Prop Firm Combine',
-      'consistent_profitability': 'Achieve Consistent Profitability',
-      'risk_management': 'Master Risk Management',
-      'skill_development': 'Develop Trading Skills'
-    };
-    return goalMap[profile.trading_goal] || profile.trading_goal;
-  };
-
   // Show onboarding flow for new users
   if (showOnboarding && user) {
     return <OnboardingFlow userId={user.id} onComplete={handleOnboardingComplete} />;
@@ -225,130 +186,108 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-              <span className="text-lg font-bold text-white">TT</span>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">The Traders Track</h1>
-              <div className="flex items-center space-x-2 text-gray-400 text-sm">
-                <span>Welcome back, {getDisplayName()}</span>
-                {getAvatarName() && (
-                  <>
-                    <span>|</span>
-                    <span className="text-blue-400">Avatar: {getAvatarName()}</span>
-                  </>
-                )}
-                {getGoalName() && (
-                  <>
-                    <span>|</span>
-                    <span className="text-purple-400">Goal: {getGoalName()}</span>
-                  </>
-                )}
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gray-900">
+        <AppSidebar profile={profile} />
+        <SidebarInset className="flex-1">
+          {/* Main Content Header */}
+          <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+                <p className="text-gray-400">Welcome back, here's your performance overview.</p>
+              </div>
+              <div className="flex items-center space-x-4">
+                <AlphaCoinBalance balance={profile?.alpha_coins || 0} />
               </div>
             </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <AlphaCoinBalance balance={profile?.alpha_coins || 0} />
-            <Button 
-              onClick={handleSignOut}
-              variant="outline"
-              className="border-gray-600 text-gray-300 hover:bg-gray-700"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
+          </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
-        {/* Hero Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-          <Card className="bg-gray-800 border-gray-700">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-300">Total P/L</CardTitle>
-              <TrendingUp className="w-4 h-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${stats.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {stats.totalPnL >= 0 ? '+' : ''}${stats.totalPnL.toFixed(2)}
+          {/* Main Content */}
+          <main className="container mx-auto px-6 py-8">
+            {/* Hero Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-300">Total P/L</CardTitle>
+                  <TrendingUp className="w-4 h-4 text-green-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl font-bold ${stats.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {stats.totalPnL >= 0 ? '+' : ''}${stats.totalPnL.toFixed(2)}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-300">Win Rate</CardTitle>
+                  <Percent className="w-4 h-4 text-blue-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-white">
+                    {stats.winRate.toFixed(1)}%
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gray-800 border-gray-700 border-blue-500">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-300">T-Track Score</CardTitle>
+                  <Award className="w-4 h-4 text-blue-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-bold text-blue-400">
+                    {stats.tTrackScore}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-300">Profit Factor</CardTitle>
+                  <BarChart3 className="w-4 h-4 text-purple-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-white">
+                    {stats.profitFactor.toFixed(2)}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-300">Avg. R/R</CardTitle>
+                  <Target className="w-4 h-4 text-orange-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-white">
+                    1:{stats.avgRR.toFixed(1)}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Three Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Main Content Area - Spans 3 columns */}
+              <div className="lg:col-span-3 space-y-6">
+                {/* Equity Curve Chart */}
+                <EquityCurveChart trades={trades} />
+                
+                {/* Performance Calendar */}
+                <PerformanceCalendar />
               </div>
-            </CardContent>
-          </Card>
 
-          <Card className="bg-gray-800 border-gray-700">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-300">Win Rate</CardTitle>
-              <Percent className="w-4 h-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {stats.winRate.toFixed(1)}%
+              {/* Right Sidebar - Spans 1 column */}
+              <div className="lg:col-span-1">
+                <TradingSidebar trades={trades} onTradeCreated={fetchUserData} />
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gray-800 border-gray-700 border-blue-500">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-300">T-Track Score</CardTitle>
-              <Award className="w-4 h-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold text-blue-400">
-                {stats.tTrackScore}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gray-800 border-gray-700">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-300">Profit Factor</CardTitle>
-              <BarChart3 className="w-4 h-4 text-purple-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {stats.profitFactor.toFixed(2)}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gray-800 border-gray-700">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-300">Avg. R/R</CardTitle>
-              <Target className="w-4 h-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                1:{stats.avgRR.toFixed(1)}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Three Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Content Area - Spans 3 columns */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Equity Curve Chart */}
-            <EquityCurveChart trades={trades} />
-            
-            {/* Performance Calendar */}
-            <PerformanceCalendar />
-          </div>
-
-          {/* Right Sidebar - Spans 1 column */}
-          <div className="lg:col-span-1">
-            <TradingSidebar trades={trades} onTradeCreated={fetchUserData} />
-          </div>
-        </div>
-      </main>
-    </div>
+            </div>
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 };
 
