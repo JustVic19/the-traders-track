@@ -65,34 +65,6 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
       </SidebarContent>
 
       <SidebarFooter className="p-4" style={{ backgroundColor: '#101623' }}>
-        {/* Welcome Message and Actions Section */}
-        <div className="bg-gray-900 rounded-lg p-4 mb-4">
-          <div className="text-center mb-4">
-            <h3 className="text-white font-medium text-sm">
-              Welcome back, {profile?.username || 'Trader'}!
-            </h3>
-          </div>
-          <Separator className="mb-4 bg-gray-700" />
-          <div className="space-y-2">
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white h-9"
-              onClick={() => navigate('/settings')}
-            >
-              <Settings className="w-4 h-4 mr-3" />
-              Settings
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white h-9"
-              onClick={handleSignOut}
-            >
-              <LogOut className="w-4 h-4 mr-3" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
-
         {/* User Information Section */}
         <div className="bg-gray-900 rounded-lg p-3 mb-4">
           <div className="space-y-2">
@@ -121,6 +93,34 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
               </span>
               <span className="text-sm font-medium text-purple-400">{profile?.focus_points || 0}</span>
             </div>
+          </div>
+        </div>
+
+        {/* Welcome Message and Actions Section */}
+        <div className="bg-gray-900 rounded-lg p-4 mb-4">
+          <div className="text-center mb-4">
+            <h3 className="text-white font-medium text-sm">
+              Welcome back, {profile?.username || 'Trader'}!
+            </h3>
+          </div>
+          <Separator className="mb-4 bg-gray-700" />
+          <div className="space-y-2">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white h-9"
+              onClick={() => navigate('/settings')}
+            >
+              <Settings className="w-4 h-4 mr-3" />
+              Settings
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white h-9"
+              onClick={handleSignOut}
+            >
+              <LogOut className="w-4 h-4 mr-3" />
+              Sign Out
+            </Button>
           </div>
         </div>
       </SidebarFooter>
