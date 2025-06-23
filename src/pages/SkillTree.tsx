@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +14,20 @@ import AppSidebar from '@/components/AppSidebar';
 
 type UserSkill = Tables<'user_skills'>;
 type Profile = Tables<'profiles'>;
+
+interface SkillData {
+  name: string;
+  level: number;
+  maxLevel: number;
+  xp: number;
+  maxXp: number;
+}
+
+interface SkillCategory {
+  name: string;
+  icon: string;
+  skills: SkillData[];
+}
 
 const SkillTree = () => {
   const { user } = useAuth();
@@ -60,35 +75,101 @@ const SkillTree = () => {
     }
   };
 
-  const skillCategories = [
-    {
-      name: "Risk Management",
-      icon: "🛡️",
-      skills: [
-        { name: "Position Sizing", level: 2, maxLevel: 5, xp: 150, maxXp: 250 },
-        { name: "Stop Loss Mastery", level: 1, maxLevel: 5, xp: 80, maxXp: 200 },
-        { name: "Risk/Reward Optimization", level: 0, maxLevel: 5, xp: 0, maxXp: 150 },
-      ]
-    },
-    {
-      name: "Technical Analysis",
-      icon: "📊",
-      skills: [
-        { name: "Chart Pattern Recognition", level: 3, maxLevel: 5, xp: 280, maxXp: 300 },
-        { name: "Indicator Mastery", level: 2, maxLevel: 5, xp: 180, maxXp: 250 },
-        { name: "Support & Resistance", level: 1, maxLevel: 5, xp: 120, maxXp: 200 },
-      ]
-    },
-    {
-      name: "Psychology",
-      icon: "🧠",
-      skills: [
-        { name: "Emotional Control", level: 1, maxLevel: 5, xp: 90, maxXp: 200 },
-        { name: "Discipline Mastery", level: 2, maxLevel: 5, xp: 170, maxXp: 250 },
-        { name: "FOMO Resistance", level: 0, maxLevel: 5, xp: 0, maxXp: 150 },
-      ]
+  const upgradeSkill = async (skillName: string) => {
+    if (!profile || profile.skill_points < 1) {
+      toast({
+        title: "Insufficient Skill Points",
+        description: "You need at least 1 skill point to upgrade a skill.",
+        variant: "destructive",
+      });
+      return;
     }
-  ];
+
+    const skillToUpgrade = userSkills.find(skill => skill.skill_name === skillName);
+    if (!skillToUpgrade) return;
+
+    if (skillToUpgrade.skill_level >= 5) {
+      toast({
+        title: "Skill Maxed",
+        description: "This skill is already at maximum level.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Update skill level and current_xp
+      const { error: skillError } = await supabase
+        .from('user_skills')
+        .update({ 
+          skill_level: skillToUpgrade.skill_level + 1,
+          current_xp: 0 // Reset XP when leveling up
+        })
+        .eq('id', skillToUpgrade.id);
+
+      if (skillError) throw skillError;
+
+      // Decrease skill points
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ skill_points: profile.skill_points - 1 })
+        .eq('id', user?.id);
+
+      if (profileError) throw profileError;
+
+      // Refresh data
+      await fetchData();
+
+      toast({
+        title: "Skill Upgraded!",
+        description: `${skillName} has been upgraded to level ${skillToUpgrade.skill_level + 1}.`,
+        variant: "default",
+      });
+
+    } catch (error: any) {
+      console.error('Error upgrading skill:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upgrade skill",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getSkillCategories = (): SkillCategory[] => {
+    const categories = [
+      {
+        name: "Risk Management",
+        icon: "🛡️",
+        skillNames: ["Position Sizing", "Stop Loss Mastery", "Risk/Reward Optimization"]
+      },
+      {
+        name: "Technical Analysis", 
+        icon: "📊",
+        skillNames: ["Chart Pattern Recognition", "Indicator Mastery", "Support & Resistance"]
+      },
+      {
+        name: "Psychology",
+        icon: "🧠", 
+        skillNames: ["Emotional Control", "Discipline Mastery", "FOMO Resistance"]
+      }
+    ];
+
+    return categories.map(category => ({
+      name: category.name,
+      icon: category.icon,
+      skills: category.skillNames.map(skillName => {
+        const userSkill = userSkills.find(skill => skill.skill_name === skillName);
+        return {
+          name: skillName,
+          level: userSkill?.skill_level || 1,
+          maxLevel: 5,
+          xp: userSkill?.current_xp || 0,
+          maxXp: (userSkill?.skill_level || 1) * 100 // XP requirement increases with level
+        };
+      })
+    }));
+  };
 
   if (loading) {
     return (
@@ -102,6 +183,8 @@ const SkillTree = () => {
       </SidebarProvider>
     );
   }
+
+  const skillCategories = getSkillCategories();
 
   return (
     <SidebarProvider>
@@ -118,7 +201,7 @@ const SkillTree = () => {
               <div className="flex items-center space-x-4">
                 <div className="text-right">
                   <p className="text-sm text-gray-400">Available Skill Points</p>
-                  <p className="text-xl font-bold text-blue-400">5</p>
+                  <p className="text-xl font-bold text-blue-400">{profile?.skill_points || 0}</p>
                 </div>
               </div>
             </div>
@@ -142,7 +225,7 @@ const SkillTree = () => {
                             <CardTitle className="text-white flex items-center space-x-2">
                               {skill.level === skill.maxLevel ? (
                                 <CheckCircle className="w-5 h-5 text-green-500" />
-                              ) : skill.level > 0 ? (
+                              ) : skill.level > 1 ? (
                                 <Star className="w-5 h-5 text-yellow-500" />
                               ) : (
                                 <Lock className="w-5 h-5 text-gray-500" />
@@ -150,8 +233,8 @@ const SkillTree = () => {
                               <span>{skill.name}</span>
                             </CardTitle>
                             <Badge 
-                              variant={skill.level > 0 ? "default" : "secondary"}
-                              className={skill.level > 0 ? "bg-blue-600" : ""}
+                              variant={skill.level > 1 ? "default" : "secondary"}
+                              className={skill.level > 1 ? "bg-blue-600" : ""}
                             >
                               Level {skill.level}
                             </Badge>
@@ -173,10 +256,10 @@ const SkillTree = () => {
                             {skill.level < skill.maxLevel && (
                               <Button 
                                 className="w-full"
-                                disabled={skill.level === 0}
-                                variant={skill.level > 0 ? "default" : "secondary"}
+                                disabled={!profile || profile.skill_points < 1}
+                                onClick={() => upgradeSkill(skill.name)}
                               >
-                                {skill.level === 0 ? "Locked" : "Upgrade (1 SP)"}
+                                {!profile || profile.skill_points < 1 ? "No Skill Points" : "Upgrade (1 SP)"}
                               </Button>
                             )}
                             

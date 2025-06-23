@@ -230,7 +230,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_default_skills_for_user: {
+        Args: { user_profile_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
