@@ -110,8 +110,8 @@ const SkillTree = () => {
 
       if (error) throw error;
 
-      // Type assertion to handle the JSON response
-      const result = data as UpgradeSkillResponse;
+      // Type assertion to handle the JSON response - convert to unknown first, then to our interface
+      const result = data as unknown as UpgradeSkillResponse;
 
       // Check the result from the function
       if (!result.success) {
@@ -171,7 +171,7 @@ const SkillTree = () => {
           level: userSkill?.skill_level || 1,
           maxLevel: 5,
           xp: userSkill?.current_xp || 0,
-          maxXp: (userSkill?.skill_level || 1) * 100 // XP requirement increases with level
+          maxXp: (userSkill?.skill_level || 1) * 100
         };
       })
     }));
