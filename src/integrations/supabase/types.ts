@@ -49,6 +49,7 @@ export type Database = {
         Row: {
           alpha_coins: number
           created_at: string
+          focus_points: number
           id: string
           level: number
           onboarding_completed: boolean
@@ -63,6 +64,7 @@ export type Database = {
         Insert: {
           alpha_coins?: number
           created_at?: string
+          focus_points?: number
           id: string
           level?: number
           onboarding_completed?: boolean
@@ -77,6 +79,7 @@ export type Database = {
         Update: {
           alpha_coins?: number
           created_at?: string
+          focus_points?: number
           id?: string
           level?: number
           onboarding_completed?: boolean
