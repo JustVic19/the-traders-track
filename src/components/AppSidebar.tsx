@@ -39,6 +39,9 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
             </div>
             <h1 className="text-xl font-bold text-white">The Traders Track</h1>
           </div>
+          <div className="text-sm text-gray-300 mt-2">
+            Welcome, {profile?.username || 'Trader'}
+          </div>
         </div>
       </SidebarHeader>
 
@@ -66,12 +69,6 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
       <SidebarFooter className="p-4" style={{ backgroundColor: '#101623' }}>
         {/* User Information Section */}
         <div className="bg-gray-900 rounded-lg p-3 mb-4">
-          <div className="text-center mb-3">
-            <div className="text-sm text-gray-300">
-              Welcome, {profile?.username || 'Trader'}
-            </div>
-          </div>
-          
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-400">Level</span>
