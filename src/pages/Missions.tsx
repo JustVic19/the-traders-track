@@ -12,14 +12,16 @@ import { Tables } from '@/integrations/supabase/types';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 
-type Mission = Tables<'missions'>;
+type UserMission = Tables<'user_missions'> & {
+  mission: Tables<'missions'>;
+};
 type Profile = Tables<'profiles'>;
 
 const Missions = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [missions, setMissions] = useState<Mission[]>([]);
+  const [userMissions, setUserMissions] = useState<UserMission[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,15 +42,18 @@ const Missions = () => {
       if (profileError) throw profileError;
       setProfile(profileData);
 
-      // Fetch missions
+      // Fetch user missions with mission details
       const { data: missionsData, error: missionsError } = await supabase
-        .from('missions')
-        .select('*')
+        .from('user_missions')
+        .select(`
+          *,
+          mission:missions(*)
+        `)
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
       if (missionsError) throw missionsError;
-      setMissions(missionsData || []);
+      setUserMissions(missionsData as UserMission[] || []);
 
     } catch (error: any) {
       console.error('Error fetching data:', error);
@@ -62,18 +67,18 @@ const Missions = () => {
     }
   };
 
-  const claimReward = async (missionId: string) => {
+  const claimReward = async (userMissionId: string) => {
     try {
       const { error } = await supabase
-        .from('missions')
-        .update({ reward_claimed: true })
-        .eq('id', missionId);
+        .from('user_missions')
+        .update({ is_claimed: true, claimed_at: new Date().toISOString() })
+        .eq('id', userMissionId);
 
       if (error) throw error;
 
       toast({
         title: "Reward Claimed!",
-        description: "Your Alpha Coins have been added to your account.",
+        description: "Your XP has been added to your account.",
       });
 
       fetchData(); // Refresh data
@@ -99,9 +104,9 @@ const Missions = () => {
     );
   }
 
-  const completedMissions = missions.filter(m => m.is_completed);
-  const activeMissions = missions.filter(m => !m.is_completed);
-  const totalRewards = completedMissions.reduce((sum, m) => sum + (m.reward_amount || 0), 0);
+  const completedMissions = userMissions.filter(m => m.is_completed);
+  const activeMissions = userMissions.filter(m => !m.is_completed);
+  const totalRewards = completedMissions.reduce((sum, m) => sum + (m.mission?.xp_reward || 0), 0);
 
   return (
     <SidebarProvider>
@@ -113,7 +118,7 @@ const Missions = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-white">Missions</h1>
-                <p className="text-gray-400">Complete challenges to earn Alpha Coins and level up.</p>
+                <p className="text-gray-400">Complete challenges to earn XP and level up.</p>
               </div>
             </div>
           </header>
@@ -144,11 +149,11 @@ const Missions = () => {
 
               <Card className="bg-gray-800 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-300">Total Rewards</CardTitle>
-                  <Coins className="w-4 h-4 text-yellow-500" />
+                  <CardTitle className="text-sm font-medium text-gray-300">Total XP Earned</CardTitle>
+                  <Star className="w-4 h-4 text-yellow-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-yellow-400">{totalRewards} AC</div>
+                  <div className="text-2xl font-bold text-yellow-400">{totalRewards} XP</div>
                 </CardContent>
               </Card>
             </div>
@@ -160,19 +165,19 @@ const Missions = () => {
                 <div>
                   <h2 className="text-xl font-bold text-white mb-4">Active Missions</h2>
                   <div className="grid gap-4">
-                    {activeMissions.map((mission) => (
-                      <Card key={mission.id} className="bg-gray-800 border-gray-700">
+                    {activeMissions.map((userMission) => (
+                      <Card key={userMission.id} className="bg-gray-800 border-gray-700">
                         <CardHeader>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
                               <Target className="w-5 h-5 text-blue-500" />
                               <div>
-                                <CardTitle className="text-white">{mission.title}</CardTitle>
-                                <p className="text-gray-400 text-sm">{mission.description}</p>
+                                <CardTitle className="text-white">{userMission.mission?.title}</CardTitle>
+                                <p className="text-gray-400 text-sm">{userMission.mission?.description}</p>
                               </div>
                             </div>
                             <Badge variant="outline" className="text-blue-400 border-blue-400">
-                              {mission.reward_amount} AC
+                              {userMission.mission?.xp_reward} XP
                             </Badge>
                           </div>
                         </CardHeader>
@@ -181,11 +186,11 @@ const Missions = () => {
                             <div className="flex justify-between text-sm">
                               <span className="text-gray-400">Progress</span>
                               <span className="text-white">
-                                {mission.current_progress}/{mission.target_value}
+                                {userMission.current_progress}/{userMission.mission?.target_value}
                               </span>
                             </div>
                             <Progress 
-                              value={(mission.current_progress / mission.target_value) * 100} 
+                              value={(userMission.current_progress / (userMission.mission?.target_value || 1)) * 100} 
                               className="h-2"
                             />
                           </div>
@@ -201,28 +206,28 @@ const Missions = () => {
                 <div>
                   <h2 className="text-xl font-bold text-white mb-4">Completed Missions</h2>
                   <div className="grid gap-4">
-                    {completedMissions.map((mission) => (
-                      <Card key={mission.id} className="bg-gray-800 border-gray-700">
+                    {completedMissions.map((userMission) => (
+                      <Card key={userMission.id} className="bg-gray-800 border-gray-700">
                         <CardHeader>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
                               <Trophy className="w-5 h-5 text-yellow-500" />
                               <div>
-                                <CardTitle className="text-white">{mission.title}</CardTitle>
-                                <p className="text-gray-400 text-sm">{mission.description}</p>
+                                <CardTitle className="text-white">{userMission.mission?.title}</CardTitle>
+                                <p className="text-gray-400 text-sm">{userMission.mission?.description}</p>
                               </div>
                             </div>
                             <div className="flex items-center space-x-2">
                               <Badge variant="outline" className="text-green-400 border-green-400">
                                 Completed
                               </Badge>
-                              {!mission.reward_claimed && (
+                              {!userMission.is_claimed && (
                                 <Button 
                                   size="sm"
-                                  onClick={() => claimReward(mission.id)}
+                                  onClick={() => claimReward(userMission.id)}
                                   className="bg-yellow-600 hover:bg-yellow-700"
                                 >
-                                  Claim {mission.reward_amount} AC
+                                  Claim {userMission.mission?.xp_reward} XP
                                 </Button>
                               )}
                             </div>
@@ -234,7 +239,7 @@ const Missions = () => {
                 </div>
               )}
 
-              {missions.length === 0 && (
+              {userMissions.length === 0 && (
                 <Card className="bg-gray-800 border-gray-700">
                   <CardContent className="text-center py-8">
                     <Target className="w-12 h-12 mx-auto text-gray-500 mb-4" />

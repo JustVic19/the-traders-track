@@ -11,15 +11,51 @@ import { Tables } from '@/integrations/supabase/types';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 
-type StoreItem = Tables<'store_items'>;
 type Profile = Tables<'profiles'>;
+
+// Placeholder store items until database table is created
+interface StoreItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  is_available: boolean;
+}
 
 const Store = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [storeItems, setStoreItems] = useState<StoreItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Placeholder store items
+  const storeItems: StoreItem[] = [
+    {
+      id: '1',
+      name: 'Advanced Analytics',
+      description: 'Unlock detailed performance analytics and insights',
+      price: 500,
+      category: 'premium',
+      is_available: true
+    },
+    {
+      id: '2',
+      name: 'Trade Journal Pro',
+      description: 'Enhanced journaling features with AI insights',
+      price: 300,
+      category: 'premium',
+      is_available: true
+    },
+    {
+      id: '3',
+      name: 'Risk Calculator',
+      description: 'Advanced risk management tools',
+      price: 200,
+      category: 'tools',
+      is_available: true
+    }
+  ];
 
   useEffect(() => {
     if (user) {
@@ -38,16 +74,6 @@ const Store = () => {
 
       if (profileError) throw profileError;
       setProfile(profileData);
-
-      // Fetch store items
-      const { data: itemsData, error: itemsError } = await supabase
-        .from('store_items')
-        .select('*')
-        .eq('is_available', true)
-        .order('price', { ascending: true });
-
-      if (itemsError) throw itemsError;
-      setStoreItems(itemsData || []);
 
     } catch (error: any) {
       console.error('Error fetching data:', error);
@@ -71,29 +97,12 @@ const Store = () => {
       return;
     }
 
-    try {
-      // Create purchase record and update user's alpha coins
-      const { error } = await supabase.rpc('purchase_store_item', {
-        user_id: user?.id,
-        item_id: item.id,
-        item_price: item.price
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Purchase Successful!",
-        description: `You've purchased ${item.name}`,
-      });
-
-      fetchData(); // Refresh data
-    } catch (error: any) {
-      toast({
-        title: "Purchase Failed",
-        description: "Failed to complete purchase",
-        variant: "destructive",
-      });
-    }
+    // For now, just show a message that this is a placeholder
+    toast({
+      title: "Store Coming Soon",
+      description: "The store functionality will be available soon!",
+      variant: "default",
+    });
   };
 
   if (loading) {
