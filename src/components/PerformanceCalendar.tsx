@@ -37,13 +37,20 @@ const PerformanceCalendar = () => {
       { week: 2, earnings: 0, days: 0 },
       { week: 3, earnings: 0, days: 0 },
       { week: 4, earnings: 0, days: 0 },
-      { week: 5, earnings: 0, days: 0 }
+      { week: 5, earnings: 0, days: 0 },
+      { week: 6, earnings: 0, days: 0 }
     ];
   };
 
   const calendarData = generateCalendarData();
   const weeklyStats = generateWeeklyStats();
   const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Group calendar data into weeks for proper alignment
+  const calendarWeeks = [];
+  for (let i = 0; i < calendarData.length; i += 7) {
+    calendarWeeks.push(calendarData.slice(i, i + 7));
+  }
 
   const navigateMonth = (direction: 'prev' | 'next') => {
     // Add month navigation logic here
@@ -109,30 +116,34 @@ const PerformanceCalendar = () => {
                 </div>
               ))}
             </div>
-            {/* Calendar Days */}
-            <div className="grid grid-cols-7 gap-1">
-              {calendarData.map((day, index) => (
-                <div
-                  key={index}
-                  className={`aspect-square flex items-center justify-center text-white text-sm font-medium border border-gray-700 ${
-                    day ? `${day.className} cursor-pointer hover:opacity-80 transition-opacity` : 'bg-gray-800'
-                  }`}
-                >
-                  {day?.day || ''}
+            {/* Calendar Weeks with aligned Weekly Stats */}
+            <div className="space-y-1">
+              {calendarWeeks.map((week, weekIndex) => (
+                <div key={weekIndex} className="flex items-center space-x-1">
+                  {/* Calendar Days for this week */}
+                  <div className="grid grid-cols-7 gap-1 flex-1">
+                    {week.map((day, dayIndex) => (
+                      <div
+                        key={dayIndex}
+                        className={`aspect-square flex items-center justify-center text-white text-sm font-medium border border-gray-700 ${
+                          day ? `${day.className} cursor-pointer hover:opacity-80 transition-opacity` : 'bg-gray-800'
+                        }`}
+                      >
+                        {day?.day || ''}
+                      </div>
+                    ))}
+                  </div>
+                  {/* Weekly Stats aligned with this row */}
+                  {weeklyStats[weekIndex] && (
+                    <div className="w-24 bg-gray-700 p-3 rounded text-center flex-shrink-0">
+                      <div className="text-white text-sm font-medium mb-1">Week {weeklyStats[weekIndex].week}</div>
+                      <div className="text-white font-semibold">£{weeklyStats[weekIndex].earnings}</div>
+                      <div className="text-gray-400 text-xs">{weeklyStats[weekIndex].days} days</div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
-          </div>
-          
-          {/* Weekly Stats Sidebar */}
-          <div className="w-24 space-y-1">
-            {weeklyStats.map((week) => (
-              <div key={week.week} className="bg-gray-700 p-3 rounded text-center">
-                <div className="text-white text-sm font-medium mb-1">Week {week.week}</div>
-                <div className="text-white font-semibold">£{week.earnings}</div>
-                <div className="text-gray-400 text-xs">{week.days} days</div>
-              </div>
-            ))}
           </div>
         </div>
       </CardContent>
