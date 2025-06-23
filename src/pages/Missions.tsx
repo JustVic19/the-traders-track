@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -76,11 +77,14 @@ const Missions = () => {
 
       if (missionError) throw missionError;
 
-      // Grant focus points instead of XP
-      const { error: focusError } = await supabase.rpc('grant_focus_points', {
-        user_profile_id: user?.id,
-        points_amount: xpReward
-      });
+      // Grant focus points by updating the profile directly
+      const { error: focusError } = await supabase
+        .from('profiles')
+        .update({ 
+          focus_points: (profile?.focus_points || 0) + xpReward,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user?.id);
 
       if (focusError) throw focusError;
 
