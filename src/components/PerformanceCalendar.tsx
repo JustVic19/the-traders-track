@@ -108,13 +108,17 @@ const PerformanceCalendar = () => {
         <div className="flex space-x-4">
           {/* Calendar Grid */}
           <div className="flex-1">
-            {/* Weekday Headers */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
-              {weekdays.map((day) => (
-                <div key={day} className="text-center text-gray-400 text-sm font-medium p-2">
-                  {day}
-                </div>
-              ))}
+            {/* Weekday Headers - aligned with calendar columns */}
+            <div className="flex items-center space-x-1 mb-2">
+              <div className="grid grid-cols-7 gap-1 flex-1">
+                {weekdays.map((day) => (
+                  <div key={day} className="text-center text-gray-400 text-sm font-medium p-2">
+                    {day}
+                  </div>
+                ))}
+              </div>
+              {/* Empty space to align with weekly stats column */}
+              <div className="w-24 flex-shrink-0"></div>
             </div>
             {/* Calendar Weeks with aligned Weekly Stats */}
             <div className="space-y-1">
