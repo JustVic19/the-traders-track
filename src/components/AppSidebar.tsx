@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
-import { BarChart3, Target, Trophy, Store, LogOut, Coins, Star, Focus, ToggleLeft, ToggleRight } from 'lucide-react';
+import { BarChart3, Target, Trophy, Store, LogOut, Coins, Star, Focus, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -32,36 +32,24 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
   const isCollapsed = state === 'collapsed';
 
   return (
-    <Sidebar className="border-r border-gray-800" style={{ backgroundColor: '#101623' }}>
-      <SidebarHeader className="p-4" style={{ backgroundColor: '#101623' }}>
+    <Sidebar className="border-r border-gray-800" style={{ backgroundColor: '#1A1F2E' }}>
+      <SidebarHeader className="p-4" style={{ backgroundColor: '#1A1F2E' }}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="flex items-center space-x-2 min-w-0">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
               <span className="text-white font-bold text-sm">TT</span>
             </div>
             {!isCollapsed && (
-              <div>
-                <h1 className="text-white font-semibold text-sm">The Traders</h1>
-                <h2 className="text-white font-semibold text-sm">Track</h2>
+              <div className="min-w-0">
+                <h1 className="text-white font-semibold text-sm truncate">The Traders</h1>
+                <h2 className="text-white font-semibold text-sm truncate">Track</h2>
               </div>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSidebar}
-            className="h-8 w-8 text-gray-300 hover:bg-gray-800 hover:text-white"
-          >
-            {isCollapsed ? (
-              <ToggleRight className="w-4 h-4" />
-            ) : (
-              <ToggleLeft className="w-4 h-4" />
-            )}
-          </Button>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="p-4" style={{ backgroundColor: '#101623' }}>
+      <SidebarContent className="p-4" style={{ backgroundColor: '#1A1F2E' }}>
         <SidebarMenu className="space-y-1">
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.path}>
@@ -70,19 +58,33 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
                 className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${
                   location.pathname === item.path 
                     ? 'bg-blue-600 text-white' 
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                 }`}
-                style={{ backgroundColor: location.pathname === item.path ? undefined : 'transparent' }}
+                tooltip={isCollapsed ? item.label : undefined}
               >
-                <item.icon className="w-5 h-5" />
-                {!isCollapsed && <span className="text-sm">{item.label}</span>}
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                {!isCollapsed && <span className="text-sm truncate">{item.label}</span>}
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 space-y-4" style={{ backgroundColor: '#101623' }}>
+      <SidebarFooter className="p-4 space-y-4" style={{ backgroundColor: '#1A1F2E' }}>
+        {/* Toggle Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
+          className="w-full justify-center text-gray-300 hover:bg-gray-700 hover:text-white"
+        >
+          {isCollapsed ? (
+            <ChevronsRight className="w-4 h-4" />
+          ) : (
+            <ChevronsLeft className="w-4 h-4" />
+          )}
+        </Button>
+
         {!isCollapsed && (
           <>
             {/* User Stats Section */}
@@ -115,9 +117,9 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
             </div>
 
             {/* User Info Section */}
-            <div className="bg-gray-800 rounded-lg p-3">
+            <div className="bg-gray-700 rounded-lg p-3">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-xs font-medium">
                     {profile?.username?.charAt(0).toUpperCase() || 'T'}
                   </span>
@@ -133,11 +135,23 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
           </>
         )}
 
+        {isCollapsed && (
+          /* Collapsed User Avatar */
+          <div className="flex justify-center">
+            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-medium">
+                {profile?.username?.charAt(0).toUpperCase() || 'T'}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Sign Out Button */}
         <Button 
           variant="ghost" 
-          className={`w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white h-9 ${isCollapsed ? 'p-2' : 'p-3'}`}
+          className={`w-full justify-center text-gray-300 hover:bg-gray-700 hover:text-white h-9 ${isCollapsed ? 'p-2' : 'justify-start p-3'}`}
           onClick={handleSignOut}
+          title={isCollapsed ? 'Sign Out' : undefined}
         >
           <LogOut className="w-4 h-4" />
           {!isCollapsed && <span className="text-sm ml-3">Sign Out</span>}

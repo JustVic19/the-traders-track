@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -176,7 +174,7 @@ const Dashboard = () => {
   // Show loading state
   if (loading || statsLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0B0F19' }}>
         <div className="text-lg text-white">Loading dashboard...</div>
       </div>
     );
@@ -191,9 +189,9 @@ const Dashboard = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full" style={{ backgroundColor: '#0B0F19' }}>
         <AppSidebar profile={profile} />
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1 transition-all duration-300 ease-in-out">
           {/* Main Content Header */}
-          <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+          <header className="border-b border-gray-700 px-6 py-4" style={{ backgroundColor: '#1A1F2E' }}>
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-white">Dashboard</h1>
