@@ -189,9 +189,9 @@ const Dashboard = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full" style={{ backgroundColor: '#0B0F19' }}>
         <AppSidebar profile={profile} />
-        <SidebarInset className="flex-1 transition-all duration-300 ease-in-out">
+        <SidebarInset className="flex-1 w-full" style={{ backgroundColor: '#0B0F19' }}>
           {/* Main Content Header */}
-          <header className="border-b border-gray-700 px-6 py-4" style={{ backgroundColor: '#1A1F2E' }}>
+          <header className="border-b border-gray-700 px-6 py-4 w-full" style={{ backgroundColor: '#1A1F2E' }}>
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-white">Dashboard</h1>
@@ -204,7 +204,7 @@ const Dashboard = () => {
           </header>
 
           {/* Main Content */}
-          <main className="container mx-auto px-6 py-8" style={{ backgroundColor: '#0B0F19' }}>
+          <main className="w-full px-6 py-8" style={{ backgroundColor: '#0B0F19' }}>
             {/* Hero Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
               <Card className="bg-gray-800 border-gray-700">
