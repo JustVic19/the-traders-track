@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { BarChart3, Target, Trophy, Store, Settings, LogOut, Coins, Star, Focus } from 'lucide-react';
@@ -39,7 +38,7 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
             </div>
             <h1 className="text-xl font-bold text-white">The Traders Track</h1>
           </div>
-          <div className="text-sm text-gray-300">
+          <div className="text-sm text-gray-300 mt-6">
             Welcome, {profile?.username || 'Trader'}
           </div>
         </div>
