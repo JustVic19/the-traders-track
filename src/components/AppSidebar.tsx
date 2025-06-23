@@ -1,12 +1,10 @@
 
-
 import React from 'react';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { BarChart3, Target, Trophy, Store, Settings, LogOut, Coins, Star, Focus } from 'lucide-react';
+import { BarChart3, Target, Trophy, Store, LogOut, Coins, Star, Focus } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Tables } from '@/integrations/supabase/types';
 
 interface AppSidebarProps {
@@ -20,9 +18,9 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
 
   const menuItems = [
     { icon: BarChart3, label: 'Dashboard', path: '/dashboard' },
-    { icon: Target, label: 'Skills', path: '/skills' },
-    { icon: Trophy, label: 'Missions', path: '/missions' },
+    { icon: Target, label: 'Missions', path: '/missions' },
     { icon: Store, label: 'Store', path: '/store' },
+    { icon: Trophy, label: 'Skill Tree', path: '/skills' },
   ];
 
   const handleSignOut = async () => {
@@ -32,19 +30,20 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
 
   return (
     <Sidebar className="border-r border-gray-800" style={{ backgroundColor: '#101623' }}>
-      <SidebarHeader className="p-4 pb-8" style={{ backgroundColor: '#101623' }}>
-        <div className="text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">TT</span>
-            </div>
-            <h1 className="text-xl font-bold text-white">The Traders Track</h1>
+      <SidebarHeader className="p-4" style={{ backgroundColor: '#101623' }}>
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">TT</span>
+          </div>
+          <div>
+            <h1 className="text-white font-semibold text-sm">The Traders</h1>
+            <h2 className="text-white font-semibold text-sm">Track</h2>
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="p-4 pt-2" style={{ backgroundColor: '#101623' }}>
-        <SidebarMenu className="space-y-1 mb-6">
+      <SidebarContent className="p-4" style={{ backgroundColor: '#101623' }}>
+        <SidebarMenu className="space-y-1">
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.path}>
               <SidebarMenuButton 
@@ -57,76 +56,72 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
                 style={{ backgroundColor: location.pathname === item.path ? undefined : 'transparent' }}
               >
                 <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
+                <span className="text-sm">{item.label}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-4" style={{ backgroundColor: '#101623' }}>
-        {/* User Information Section */}
-        <div className="bg-gray-900 rounded-lg p-3 mb-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Level</span>
-              <span className="text-sm font-medium text-white">{profile?.level || 1}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400 flex items-center">
-                <Coins className="w-3 h-3 mr-1" />
-                Alpha Coins
+      <SidebarFooter className="p-4 space-y-4" style={{ backgroundColor: '#101623' }}>
+        {/* User Stats Section */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-400">Level</span>
+            <span className="text-xs font-medium text-white">{profile?.level || 1}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-400 flex items-center">
+              <Coins className="w-3 h-3 mr-1" />
+              Alpha Coins
+            </span>
+            <span className="text-xs font-medium text-yellow-400">{profile?.alpha_coins || 0}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-400 flex items-center">
+              <Star className="w-3 h-3 mr-1" />
+              Skill Points
+            </span>
+            <span className="text-xs font-medium text-blue-400">{profile?.skill_points || 0}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-400 flex items-center">
+              <Focus className="w-3 h-3 mr-1" />
+              Focus Points
+            </span>
+            <span className="text-xs font-medium text-purple-400">{profile?.focus_points || 0}</span>
+          </div>
+        </div>
+
+        {/* User Info Section */}
+        <div className="bg-gray-800 rounded-lg p-3">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-medium">
+                {profile?.username?.charAt(0).toUpperCase() || 'T'}
               </span>
-              <span className="text-sm font-medium text-yellow-400">{profile?.alpha_coins || 0}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400 flex items-center">
-                <Star className="w-3 h-3 mr-1" />
-                Skill Points
-              </span>
-              <span className="text-sm font-medium text-blue-400">{profile?.skill_points || 0}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400 flex items-center">
-                <Focus className="w-3 h-3 mr-1" />
-                Focus Points
-              </span>
-              <span className="text-sm font-medium text-purple-400">{profile?.focus_points || 0}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-sm font-medium truncate">
+                {profile?.username || 'Trader'}
+              </p>
+              <p className="text-gray-400 text-xs">Level {profile?.level || 1}</p>
             </div>
           </div>
         </div>
 
-        {/* Welcome Message and Actions Section */}
-        <div className="bg-gray-900 rounded-lg p-4 mb-4">
-          <div className="text-center mb-4">
-            <h3 className="text-white font-medium text-sm">
-              Welcome back, {profile?.username || 'Trader'}!
-            </h3>
-          </div>
-          <Separator className="mb-4 bg-gray-700" />
-          <div className="space-y-2">
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white h-9"
-              onClick={() => navigate('/settings')}
-            >
-              <Settings className="w-4 h-4 mr-3" />
-              Settings
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white h-9"
-              onClick={handleSignOut}
-            >
-              <LogOut className="w-4 h-4 mr-3" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
+        {/* Sign Out Button */}
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white h-9 p-3"
+          onClick={handleSignOut}
+        >
+          <LogOut className="w-4 h-4 mr-3" />
+          <span className="text-sm">Sign Out</span>
+        </Button>
       </SidebarFooter>
     </Sidebar>
   );
 };
 
 export default AppSidebar;
-
