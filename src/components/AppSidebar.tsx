@@ -30,48 +30,19 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
   };
 
   return (
-    <Sidebar className="border-r border-sidebar-border">
+    <Sidebar className="border-r border-sidebar-border" style={{ backgroundColor: '#101623' }}>
       <SidebarHeader className="p-4">
         <div className="text-center">
-          <h1 className="text-xl font-bold text-sidebar-foreground mb-2">TradeVega</h1>
-          <div className="text-sm text-sidebar-foreground/70">
-            Welcome, {profile?.username || 'Trader'}
+          <div className="flex items-center justify-center space-x-2 mb-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">TT</span>
+            </div>
+            <h1 className="text-xl font-bold text-white">The Traders Track</h1>
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="p-4">
-        {/* User Stats */}
-        <div className="bg-sidebar-accent rounded-lg p-3 mb-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-sidebar-foreground/70">Level</span>
-              <span className="text-sm font-medium text-sidebar-foreground">{profile?.level || 1}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-sidebar-foreground/70 flex items-center">
-                <Coins className="w-3 h-3 mr-1" />
-                Alpha Coins
-              </span>
-              <span className="text-sm font-medium text-yellow-400">{profile?.alpha_coins || 0}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-sidebar-foreground/70 flex items-center">
-                <Star className="w-3 h-3 mr-1" />
-                Skill Points
-              </span>
-              <span className="text-sm font-medium text-blue-400">{profile?.skill_points || 0}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-sidebar-foreground/70 flex items-center">
-                <Focus className="w-3 h-3 mr-1" />
-                Focus Points
-              </span>
-              <span className="text-sm font-medium text-purple-400">{profile?.focus_points || 0}</span>
-            </div>
-          </div>
-        </div>
-
+      <SidebarContent className="p-4" style={{ backgroundColor: '#101623' }}>
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.path}>
@@ -79,8 +50,8 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
                 onClick={() => navigate(item.path)}
                 className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${
                   location.pathname === item.path 
-                    ? 'bg-sidebar-primary text-sidebar-primary-foreground' 
-                    : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                 }`}
               >
                 <item.icon className="w-5 h-5" />
@@ -91,12 +62,51 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
-        <Separator className="mb-4 bg-sidebar-border" />
+      <SidebarFooter className="p-4" style={{ backgroundColor: '#101623' }}>
+        {/* User Information Section */}
+        <div className="bg-gray-800 rounded-lg p-3 mb-4">
+          <div className="text-center mb-3">
+            <div className="text-sm text-gray-300">
+              Welcome, {profile?.username || 'Trader'}
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">Level</span>
+              <span className="text-sm font-medium text-white">{profile?.level || 1}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400 flex items-center">
+                <Coins className="w-3 h-3 mr-1" />
+                Alpha Coins
+              </span>
+              <span className="text-sm font-medium text-yellow-400">{profile?.alpha_coins || 0}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400 flex items-center">
+                <Star className="w-3 h-3 mr-1" />
+                Skill Points
+              </span>
+              <span className="text-sm font-medium text-blue-400">{profile?.skill_points || 0}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400 flex items-center">
+                <Focus className="w-3 h-3 mr-1" />
+                Focus Points
+              </span>
+              <span className="text-sm font-medium text-purple-400">{profile?.focus_points || 0}</span>
+            </div>
+          </div>
+        </div>
+
+        <Separator className="mb-4 bg-gray-600" />
+        
+        {/* Settings and Sign Out */}
         <div className="space-y-2">
           <Button 
             variant="ghost" 
-            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            className="w-full justify-start text-gray-300 hover:bg-gray-700 hover:text-white"
             onClick={() => navigate('/settings')}
           >
             <Settings className="w-4 h-4 mr-2" />
@@ -104,7 +114,7 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
           </Button>
           <Button 
             variant="ghost" 
-            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            className="w-full justify-start text-gray-300 hover:bg-gray-700 hover:text-white"
             onClick={handleSignOut}
           >
             <LogOut className="w-4 h-4 mr-2" />
