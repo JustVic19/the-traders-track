@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,50 +12,16 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 
 type Profile = Tables<'profiles'>;
-
-// Placeholder store items until database table is created
-interface StoreItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  is_available: boolean;
-}
+type StoreItem = Tables<'store_items'>;
 
 const Store = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [storeItems, setStoreItems] = useState<StoreItem[]>([]);
+  const [userInventory, setUserInventory] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Placeholder store items
-  const storeItems: StoreItem[] = [
-    {
-      id: '1',
-      name: 'Advanced Analytics',
-      description: 'Unlock detailed performance analytics and insights',
-      price: 500,
-      category: 'premium',
-      is_available: true
-    },
-    {
-      id: '2',
-      name: 'Trade Journal Pro',
-      description: 'Enhanced journaling features with AI insights',
-      price: 300,
-      category: 'premium',
-      is_available: true
-    },
-    {
-      id: '3',
-      name: 'Risk Calculator',
-      description: 'Advanced risk management tools',
-      price: 200,
-      category: 'tools',
-      is_available: true
-    }
-  ];
+  const [purchasing, setPurchasing] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -74,6 +41,25 @@ const Store = () => {
       if (profileError) throw profileError;
       setProfile(profileData);
 
+      // Fetch store items
+      const { data: itemsData, error: itemsError } = await supabase
+        .from('store_items')
+        .select('*')
+        .eq('is_available', true)
+        .order('category', { ascending: true });
+
+      if (itemsError) throw itemsError;
+      setStoreItems(itemsData || []);
+
+      // Fetch user's inventory
+      const { data: inventoryData, error: inventoryError } = await supabase
+        .from('user_inventory')
+        .select('store_item_id')
+        .eq('user_id', user?.id);
+
+      if (inventoryError) throw inventoryError;
+      setUserInventory(inventoryData?.map(item => item.store_item_id) || []);
+
     } catch (error: any) {
       console.error('Error fetching data:', error);
       toast({
@@ -87,7 +73,16 @@ const Store = () => {
   };
 
   const purchaseItem = async (item: StoreItem) => {
-    if (!profile || profile.alpha_coins < item.price) {
+    if (!user || !profile) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to purchase items.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (profile.alpha_coins < item.price) {
       toast({
         title: "Insufficient Alpha Coins",
         description: `You need ${item.price} Alpha Coins to purchase this item.`,
@@ -96,12 +91,80 @@ const Store = () => {
       return;
     }
 
-    // For now, just show a message that this is a placeholder
-    toast({
-      title: "Store Coming Soon",
-      description: "The store functionality will be available soon!",
-      variant: "default",
-    });
+    if (userInventory.includes(item.id)) {
+      toast({
+        title: "Already Owned",
+        description: "You already own this item.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setPurchasing(item.id);
+    try {
+      const { data, error } = await supabase.rpc('purchase_store_item', {
+        item_id: item.id,
+        user_profile_id: user.id
+      });
+
+      if (error) throw error;
+
+      const result = data as { success: boolean; error?: string; message?: string; remaining_coins?: number };
+
+      if (result.success) {
+        toast({
+          title: "Purchase Successful!",
+          description: `You purchased ${item.name}. Remaining balance: ${result.remaining_coins} AC`,
+        });
+        
+        // Update local state
+        setProfile(prev => prev ? { ...prev, alpha_coins: result.remaining_coins || 0 } : null);
+        setUserInventory(prev => [...prev, item.id]);
+      } else {
+        toast({
+          title: "Purchase Failed",
+          description: result.error || "Unknown error occurred",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      console.error('Error purchasing item:', error);
+      toast({
+        title: "Purchase Failed",
+        description: "An error occurred while processing your purchase.",
+        variant: "destructive",
+      });
+    } finally {
+      setPurchasing(null);
+    }
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'premium':
+        return <Star className="w-5 h-5 text-yellow-500" />;
+      case 'tools':
+        return <Package className="w-5 h-5 text-blue-500" />;
+      default:
+        return null;
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'premium':
+        return 'text-yellow-400 border-yellow-400';
+      case 'tools':
+        return 'text-blue-400 border-blue-400';
+      case 'avatar':
+        return 'text-green-400 border-green-400';
+      case 'theme':
+        return 'text-purple-400 border-purple-400';
+      case 'cosmetic':
+        return 'text-pink-400 border-pink-400';
+      default:
+        return 'text-gray-400 border-gray-400';
+    }
   };
 
   if (loading) {
@@ -148,40 +211,52 @@ const Store = () => {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {storeItems.map((item) => (
-                  <Card key={item.id} className="bg-gray-800 border-gray-700">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-white">{item.name}</CardTitle>
-                        {item.category === 'premium' && (
-                          <Star className="w-5 h-5 text-yellow-500" />
-                        )}
-                      </div>
-                      <p className="text-gray-400 text-sm">{item.description}</p>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
+                {storeItems.map((item) => {
+                  const isOwned = userInventory.includes(item.id);
+                  const isPurchasing = purchasing === item.id;
+                  const canAfford = profile && profile.alpha_coins >= item.price;
+
+                  return (
+                    <Card key={item.id} className="bg-gray-800 border-gray-700">
+                      <CardHeader>
                         <div className="flex items-center justify-between">
-                          <Badge variant="outline" className="text-blue-400 border-blue-400">
-                            {item.category}
-                          </Badge>
-                          <div className="flex items-center space-x-1">
-                            <Coins className="w-4 h-4 text-yellow-500" />
-                            <span className="font-bold text-yellow-400">{item.price} AC</span>
-                          </div>
+                          <CardTitle className="text-white">{item.name}</CardTitle>
+                          {getCategoryIcon(item.category)}
                         </div>
-                        <Button 
-                          className="w-full"
-                          onClick={() => purchaseItem(item)}
-                          disabled={!profile || profile.alpha_coins < item.price}
-                        >
-                          <ShoppingCart className="w-4 h-4 mr-2" />
-                          Purchase
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        <p className="text-gray-400 text-sm">{item.description}</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <Badge variant="outline" className={getCategoryColor(item.category)}>
+                              {item.category}
+                            </Badge>
+                            <div className="flex items-center space-x-1">
+                              <Coins className="w-4 h-4 text-yellow-500" />
+                              <span className="font-bold text-yellow-400">{item.price} AC</span>
+                            </div>
+                          </div>
+                          
+                          {isOwned ? (
+                            <Button className="w-full" disabled>
+                              <Package className="w-4 h-4 mr-2" />
+                              Owned
+                            </Button>
+                          ) : (
+                            <Button 
+                              className="w-full"
+                              onClick={() => purchaseItem(item)}
+                              disabled={!canAfford || isPurchasing || !user}
+                            >
+                              <ShoppingCart className="w-4 h-4 mr-2" />
+                              {isPurchasing ? 'Purchasing...' : 'Purchase'}
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </main>

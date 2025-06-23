@@ -52,6 +52,7 @@ export type Database = {
           id: string
           level: number
           onboarding_completed: boolean
+          plan: string | null
           skill_points: number
           trader_avatar: string | null
           trading_goal: string | null
@@ -65,6 +66,7 @@ export type Database = {
           id: string
           level?: number
           onboarding_completed?: boolean
+          plan?: string | null
           skill_points?: number
           trader_avatar?: string | null
           trading_goal?: string | null
@@ -78,12 +80,52 @@ export type Database = {
           id?: string
           level?: number
           onboarding_completed?: boolean
+          plan?: string | null
           skill_points?: number
           trader_avatar?: string | null
           trading_goal?: string | null
           updated_at?: string
           username?: string | null
           xp?: number
+        }
+        Relationships: []
+      }
+      store_items: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          is_available: boolean
+          item_key: string
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          item_key: string
+          name: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          item_key?: string
+          name?: string
+          price?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -142,6 +184,38 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_inventory: {
+        Row: {
+          id: string
+          is_equipped: boolean
+          purchased_at: string
+          store_item_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_equipped?: boolean
+          purchased_at?: string
+          store_item_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_equipped?: boolean
+          purchased_at?: string
+          store_item_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_inventory_store_item_id_fkey"
+            columns: ["store_item_id"]
+            isOneToOne: false
+            referencedRelation: "store_items"
             referencedColumns: ["id"]
           },
         ]
@@ -243,6 +317,10 @@ export type Database = {
         Args: { user_profile_id: string }
         Returns: undefined
       }
+      grant_monthly_pro_coins: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       grant_skill_xp: {
         Args: {
           user_profile_id: string
@@ -250,6 +328,10 @@ export type Database = {
           xp_amount: number
         }
         Returns: undefined
+      }
+      purchase_store_item: {
+        Args: { item_id: string; user_profile_id: string }
+        Returns: Json
       }
       upgrade_skill: {
         Args: { user_profile_id: string; skill_name_param: string }
