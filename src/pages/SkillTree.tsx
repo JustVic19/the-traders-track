@@ -22,6 +22,13 @@ interface UserSkill {
   updated_at: string;
 }
 
+// Define the response type for the upgrade_skill function
+interface UpgradeSkillResponse {
+  success: boolean;
+  error?: string;
+  message?: string;
+}
+
 type Profile = Tables<'profiles'>;
 
 interface SkillData {
@@ -103,11 +110,14 @@ const SkillTree = () => {
 
       if (error) throw error;
 
+      // Type assertion to handle the JSON response
+      const result = data as UpgradeSkillResponse;
+
       // Check the result from the function
-      if (!data.success) {
+      if (!result.success) {
         toast({
           title: "Upgrade Failed",
-          description: data.error,
+          description: result.error,
           variant: "destructive",
         });
         return;
