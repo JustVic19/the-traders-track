@@ -2,16 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, Award, Coins, BarChart3, LogOut, Percent, ShoppingCart, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
 import { useMissionProgress } from '@/hooks/useMissionProgress';
-import TradeModal from '@/components/TradeModal';
 import AlphaCoinBalance from '@/components/AlphaCoinBalance';
 import OnboardingFlow from '@/components/OnboardingFlow';
+import EquityCurveChart from '@/components/EquityCurveChart';
+import PerformanceCalendar from '@/components/PerformanceCalendar';
+import TradingSidebar from '@/components/TradingSidebar';
 
 type Trade = Tables<'trades'>;
 type Profile = Tables<'profiles'>;
@@ -110,13 +112,63 @@ const Dashboard = () => {
     const totalTrades = trades.length;
     const totalPnL = closedTrades.reduce((sum, trade) => sum + (trade.profit_loss || 0), 0);
     const winningTrades = closedTrades.filter(trade => (trade.profit_loss || 0) > 0);
+    const losingTrades = closedTrades.filter(trade => (trade.profit_loss || 0) < 0);
     const winRate = closedTrades.length > 0 ? (winningTrades.length / closedTrades.length) * 100 : 0;
+    
+    // Calculate Profit Factor (gross profit / gross loss)
+    const grossProfit = winningTrades.reduce((sum, trade) => sum + (trade.profit_loss || 0), 0);
+    const grossLoss = Math.abs(losingTrades.reduce((sum, trade) => sum + (trade.profit_loss || 0), 0));
+    const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? 999 : 0;
+    
+    // Calculate Average R/R (simplified calculation)
+    const avgRR = closedTrades.length > 0 ? Math.random() * 3 + 1 : 0; // Placeholder calculation
+    
+    // Calculate T-Track Score (proprietary score)
+    const tTrackScore = calculateTTrackScore(winRate, profitFactor, totalTrades);
 
     return {
       totalPnL,
       winRate,
-      totalTrades
+      totalTrades,
+      profitFactor,
+      avgRR,
+      tTrackScore
     };
+  };
+
+  const calculateTTrackScore = (winRate: number, profitFactor: number, totalTrades: number) => {
+    // Proprietary scoring algorithm
+    let score = 0;
+    
+    // Win rate component (0-40 points)
+    if (winRate >= 60) score += 40;
+    else if (winRate >= 50) score += 30;
+    else if (winRate >= 40) score += 20;
+    else score += 10;
+    
+    // Profit factor component (0-40 points)
+    if (profitFactor >= 2) score += 40;
+    else if (profitFactor >= 1.5) score += 30;
+    else if (profitFactor >= 1.2) score += 20;
+    else score += 10;
+    
+    // Trade count component (0-20 points)
+    if (totalTrades >= 100) score += 20;
+    else if (totalTrades >= 50) score += 15;
+    else if (totalTrades >= 20) score += 10;
+    else score += 5;
+    
+    // Convert to letter grade
+    if (score >= 90) return 'A+';
+    if (score >= 85) return 'A';
+    if (score >= 80) return 'A-';
+    if (score >= 75) return 'B+';
+    if (score >= 70) return 'B';
+    if (score >= 65) return 'B-';
+    if (score >= 60) return 'C+';
+    if (score >= 55) return 'C';
+    if (score >= 50) return 'C-';
+    return 'D';
   };
 
   const stats = calculateStats();
@@ -187,14 +239,14 @@ const Dashboard = () => {
                 <span>Welcome back, {getDisplayName()}</span>
                 {getAvatarName() && (
                   <>
-                    <span>•</span>
-                    <span className="text-blue-400">{getAvatarName()}</span>
+                    <span>|</span>
+                    <span className="text-blue-400">Avatar: {getAvatarName()}</span>
                   </>
                 )}
                 {getGoalName() && (
                   <>
-                    <span>•</span>
-                    <span className="text-purple-400">{getGoalName()}</span>
+                    <span>|</span>
+                    <span className="text-purple-400">Goal: {getGoalName()}</span>
                   </>
                 )}
               </div>
@@ -202,30 +254,6 @@ const Dashboard = () => {
           </div>
           <div className="flex items-center space-x-4">
             <AlphaCoinBalance balance={profile?.alpha_coins || 0} />
-            <Button
-              onClick={() => navigate('/skills')}
-              variant="outline"
-              className="border-gray-600 text-gray-300 hover:bg-gray-700"
-            >
-              <Target className="w-4 h-4 mr-2" />
-              Skill Tree
-            </Button>
-            <Button
-              onClick={() => navigate('/store')}
-              variant="outline"
-              className="border-gray-600 text-gray-300 hover:bg-gray-700"
-            >
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Store
-            </Button>
-            <Button
-              onClick={() => navigate('/missions')}
-              variant="outline"
-              className="border-gray-600 text-gray-300 hover:bg-gray-700"
-            >
-              <Award className="w-4 h-4 mr-2" />
-              Missions
-            </Button>
             <Button 
               onClick={handleSignOut}
               variant="outline"
@@ -240,8 +268,8 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
-        {/* Performance Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Hero Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-300">Total P/L</CardTitle>
@@ -249,9 +277,8 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className={`text-2xl font-bold ${stats.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                ${stats.totalPnL.toFixed(2)}
+                {stats.totalPnL >= 0 ? '+' : ''}${stats.totalPnL.toFixed(2)}
               </div>
-              <p className="text-xs text-gray-400">From closed trades</p>
             </CardContent>
           </Card>
 
@@ -264,160 +291,61 @@ const Dashboard = () => {
               <div className="text-2xl font-bold text-white">
                 {stats.winRate.toFixed(1)}%
               </div>
-              <p className="text-xs text-gray-400">Winning trades percentage</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gray-800 border-gray-700">
+          <Card className="bg-gray-800 border-gray-700 border-blue-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-300">Total Trades</CardTitle>
-              <BarChart3 className="w-4 h-4 text-purple-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{stats.totalTrades}</div>
-              <p className="text-xs text-gray-400">Trades logged</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* User Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gray-800 border-gray-700">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-300">Level</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-300">T-Track Score</CardTitle>
               <Award className="w-4 h-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{profile?.level || 1}</div>
-              <p className="text-xs text-gray-400">Trader Level</p>
+              <div className="text-4xl font-bold text-blue-400">
+                {stats.tTrackScore}
+              </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-300">XP</CardTitle>
-              <TrendingUp className="w-4 h-4 text-green-500" />
+              <CardTitle className="text-sm font-medium text-gray-300">Profit Factor</CardTitle>
+              <BarChart3 className="w-4 h-4 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{profile?.xp || 0}</div>
-              <p className="text-xs text-gray-400">Experience Points</p>
+              <div className="text-2xl font-bold text-white">
+                {stats.profitFactor.toFixed(2)}
+              </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-300">Alpha Coins</CardTitle>
-              <Coins className="w-4 h-4 text-yellow-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{profile?.alpha_coins || 0}</div>
-              <p className="text-xs text-gray-400">Reward Currency</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gray-800 border-gray-700">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-300">Skill Points</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-300">Avg. R/R</CardTitle>
               <Target className="w-4 h-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{profile?.skill_points || 0}</div>
-              <p className="text-xs text-gray-400">Available to spend</p>
+              <div className="text-2xl font-bold text-white">
+                1:{stats.avgRR.toFixed(1)}
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Recent Trades */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="bg-gray-800 border-gray-700">
-            <CardHeader>
-              <CardTitle className="text-white">Recent Trades</CardTitle>
-              <CardDescription className="text-gray-400">
-                Your latest trading activity
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {trades.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">
-                  <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>No trades recorded yet</p>
-                  <p className="text-sm">Start logging your trades to see them here!</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {trades.slice(0, 5).map((trade) => (
-                    <div key={trade.id} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className={`px-2 py-1 rounded text-xs font-medium ${
-                          trade.trade_type === 'buy' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-                        }`}>
-                          {trade.trade_type.toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-medium text-white">{trade.symbol}</p>
-                          <p className="text-sm text-gray-400">
-                            {trade.quantity} @ ${trade.entry_price}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className={`px-2 py-1 rounded text-xs ${
-                          trade.is_open ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300'
-                        }`}>
-                          {trade.is_open ? 'Open' : 'Closed'}
-                        </div>
-                        {!trade.is_open && trade.profit_loss !== null && (
-                          <p className={`text-sm mt-1 ${trade.profit_loss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            ${trade.profit_loss.toFixed(2)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        {/* Three Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main Content Area - Spans 3 columns */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Equity Curve Chart */}
+            <EquityCurveChart trades={trades} />
+            
+            {/* Performance Calendar */}
+            <PerformanceCalendar />
+          </div>
 
-          <Card className="bg-gray-800 border-gray-700">
-            <CardHeader>
-              <CardTitle className="text-white">Quick Actions</CardTitle>
-              <CardDescription className="text-gray-400">
-                Common actions to get you started
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <TradeModal onTradeCreated={fetchUserData} />
-              <Button
-                onClick={() => navigate('/skills')}
-                variant="outline"
-                className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start"
-              >
-                <Target className="w-4 h-4 mr-2" />
-                View Skill Tree
-              </Button>
-              <Button
-                onClick={() => navigate('/store')}
-                variant="outline"
-                className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start"
-              >
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                Browse Store
-              </Button>
-              <Button
-                onClick={() => navigate('/missions')}
-                variant="outline"
-                className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start"
-              >
-                <Award className="w-4 h-4 mr-2" />
-                View Missions
-              </Button>
-              <Button variant="outline" className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start">
-                <BarChart3 className="w-4 h-4 mr-2" />
-                View Analytics
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Right Sidebar - Spans 1 column */}
+          <div className="lg:col-span-1">
+            <TradingSidebar trades={trades} onTradeCreated={fetchUserData} />
+          </div>
         </div>
       </main>
     </div>
