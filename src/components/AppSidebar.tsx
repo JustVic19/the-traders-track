@@ -31,22 +31,22 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
 
   return (
     <Sidebar className="border-r border-gray-800" style={{ backgroundColor: '#101623' }}>
-      <SidebarHeader className="p-4" style={{ backgroundColor: '#101623' }}>
+      <SidebarHeader className="p-4 pb-6" style={{ backgroundColor: '#101623' }}>
         <div className="text-center">
-          <div className="flex items-center justify-center space-x-2 mb-2">
+          <div className="flex items-center justify-center space-x-2 mb-3">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">TT</span>
             </div>
             <h1 className="text-xl font-bold text-white">The Traders Track</h1>
           </div>
-          <div className="text-sm text-gray-300 mt-2">
+          <div className="text-sm text-gray-300">
             Welcome, {profile?.username || 'Trader'}
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="p-4" style={{ backgroundColor: '#101623' }}>
-        <SidebarMenu>
+      <SidebarContent className="p-4 pt-2" style={{ backgroundColor: '#101623' }}>
+        <SidebarMenu className="space-y-2">
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.path}>
               <SidebarMenuButton 
