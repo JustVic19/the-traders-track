@@ -30,8 +30,8 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
   };
 
   return (
-    <Sidebar className="border-r border-sidebar-border" style={{ backgroundColor: '#101623' }}>
-      <SidebarHeader className="p-4">
+    <Sidebar className="border-r border-gray-800" style={{ backgroundColor: '#101623' }}>
+      <SidebarHeader className="p-4" style={{ backgroundColor: '#101623' }}>
         <div className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -51,8 +51,9 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
                 className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${
                   location.pathname === item.path 
                     ? 'bg-blue-600 text-white' 
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                 }`}
+                style={{ backgroundColor: location.pathname === item.path ? undefined : 'transparent' }}
               >
                 <item.icon className="w-5 h-5" />
                 <span>{item.label}</span>
@@ -64,7 +65,7 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
 
       <SidebarFooter className="p-4" style={{ backgroundColor: '#101623' }}>
         {/* User Information Section */}
-        <div className="bg-gray-800 rounded-lg p-3 mb-4">
+        <div className="bg-gray-900 rounded-lg p-3 mb-4">
           <div className="text-center mb-3">
             <div className="text-sm text-gray-300">
               Welcome, {profile?.username || 'Trader'}
@@ -100,13 +101,13 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
           </div>
         </div>
 
-        <Separator className="mb-4 bg-gray-600" />
+        <Separator className="mb-4 bg-gray-700" />
         
         {/* Settings and Sign Out */}
         <div className="space-y-2">
           <Button 
             variant="ghost" 
-            className="w-full justify-start text-gray-300 hover:bg-gray-700 hover:text-white"
+            className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white"
             onClick={() => navigate('/settings')}
           >
             <Settings className="w-4 h-4 mr-2" />
@@ -114,7 +115,7 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
           </Button>
           <Button 
             variant="ghost" 
-            className="w-full justify-start text-gray-300 hover:bg-gray-700 hover:text-white"
+            className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white"
             onClick={handleSignOut}
           >
             <LogOut className="w-4 h-4 mr-2" />
