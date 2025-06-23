@@ -106,7 +106,7 @@ const Missions = () => {
   if (loading) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full" style={{ backgroundColor: '#0B0F19' }}>
+        <div className="min-h-screen flex w-full bg-gray-900">
           <AppSidebar profile={profile} />
           <SidebarInset className="flex-1 flex items-center justify-center">
             <div className="text-lg text-white">Loading missions...</div>
@@ -122,7 +122,7 @@ const Missions = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full" style={{ backgroundColor: '#0B0F19' }}>
+      <div className="min-h-screen flex w-full bg-gray-900">
         <AppSidebar profile={profile} />
         <SidebarInset className="flex-1">
           {/* Header */}
@@ -136,7 +136,7 @@ const Missions = () => {
           </header>
 
           {/* Content */}
-          <main className="container mx-auto px-6 py-8" style={{ backgroundColor: '#0B0F19' }}>
+          <main className="container mx-auto px-6 py-8 bg-gray-900">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <Card className="bg-gray-800 border-gray-700">
