@@ -1,31 +1,15 @@
 
 import React from 'react';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { BarChart3, Target, Trophy, Store, Settings, LogOut, Coins, Star, Focus } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { 
-  Sidebar, 
-  SidebarContent, 
-  SidebarFooter, 
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar';
-import { 
-  LayoutDashboard, 
-  Target, 
-  ShoppingCart, 
-  GitBranch, 
-  User, 
-  LogOut 
-} from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 import { Tables } from '@/integrations/supabase/types';
 
-type Profile = Tables<'profiles'>;
-
 interface AppSidebarProps {
-  profile: Profile | null;
+  profile: Tables<'profiles'> | null;
 }
 
 const AppSidebar = ({ profile }: AppSidebarProps) => {
@@ -34,26 +18,10 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
   const { signOut } = useAuth();
 
   const menuItems = [
-    {
-      title: "Dashboard",
-      icon: LayoutDashboard,
-      path: "/dashboard",
-    },
-    {
-      title: "Missions",
-      icon: Target,
-      path: "/missions",
-    },
-    {
-      title: "Store",
-      icon: ShoppingCart,
-      path: "/store",
-    },
-    {
-      title: "Skill Tree",
-      icon: GitBranch,
-      path: "/skills",
-    },
+    { icon: BarChart3, label: 'Dashboard', path: '/dashboard' },
+    { icon: Target, label: 'Skills', path: '/skills' },
+    { icon: Trophy, label: 'Missions', path: '/missions' },
+    { icon: Store, label: 'Store', path: '/store' },
   ];
 
   const handleSignOut = async () => {
@@ -61,79 +29,83 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
     navigate('/auth');
   };
 
-  const getDisplayName = () => {
-    if (profile?.username) {
-      return profile.username;
-    }
-    return 'Trader';
-  };
-
-  const getAvatarName = () => {
-    if (!profile?.trader_avatar) return null;
-    const avatarMap: Record<string, string> = {
-      'scalper_sam': 'Scalper Sam',
-      'swinging_sarah': 'Swinging Sarah',
-      'day_trader_dave': 'Day Trader Dave',
-      'swing_king_kyle': 'Swing King Kyle'
-    };
-    return avatarMap[profile.trader_avatar] || profile.trader_avatar;
-  };
-
   return (
-    <Sidebar className="border-gray-800" style={{ backgroundColor: '#0B0F19' }}>
-      <SidebarHeader className="p-6" style={{ backgroundColor: '#0B0F19' }}>
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-            <span className="text-lg font-bold text-white">TT</span>
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-white">The Traders</h1>
-            <h2 className="text-lg font-bold text-white">Track</h2>
+    <Sidebar className="bg-gray-900 border-r border-gray-700">
+      <SidebarHeader className="p-4">
+        <div className="text-center">
+          <h1 className="text-xl font-bold text-white mb-2">TradeVega</h1>
+          <div className="text-sm text-gray-400">
+            Welcome, {profile?.username || 'Trader'}
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-4" style={{ backgroundColor: '#0B0F19' }}>
+      <SidebarContent className="p-4">
+        {/* User Stats */}
+        <div className="bg-gray-800 rounded-lg p-3 mb-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">Level</span>
+              <span className="text-sm font-medium text-white">{profile?.level || 1}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400 flex items-center">
+                <Coins className="w-3 h-3 mr-1" />
+                Alpha Coins
+              </span>
+              <span className="text-sm font-medium text-yellow-400">{profile?.alpha_coins || 0}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400 flex items-center">
+                <Star className="w-3 h-3 mr-1" />
+                Skill Points
+              </span>
+              <span className="text-sm font-medium text-blue-400">{profile?.skill_points || 0}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400 flex items-center">
+                <Focus className="w-3 h-3 mr-1" />
+                Focus Points
+              </span>
+              <span className="text-sm font-medium text-purple-400">{profile?.focus_points || 0}</span>
+            </div>
+          </div>
+        </div>
+
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.path}>
-              <SidebarMenuButton
+              <SidebarMenuButton 
                 onClick={() => navigate(item.path)}
-                isActive={location.pathname === item.path}
-                className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800 data-[active=true]:bg-blue-600 data-[active=true]:text-white"
+                className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                  location.pathname === item.path 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                }`}
               >
                 <item.icon className="w-5 h-5" />
-                <span>{item.title}</span>
+                <span>{item.label}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-4" style={{ backgroundColor: '#0B0F19' }}>
+      <SidebarFooter className="p-4">
+        <Separator className="mb-4 bg-gray-700" />
         <div className="space-y-2">
-          <div className="flex items-center space-x-3 p-3 bg-gray-800 rounded-lg">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-sm font-bold text-white">
-                {getDisplayName().charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
-                {getDisplayName()}
-              </p>
-              {getAvatarName() && (
-                <p className="text-xs text-gray-400 truncate">
-                  {getAvatarName()}
-                </p>
-              )}
-              <p className="text-xs text-gray-400">Level {profile?.level || 1}</p>
-            </div>
-          </div>
-          <Button
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white"
+            onClick={() => navigate('/settings')}
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Settings
+          </Button>
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white"
             onClick={handleSignOut}
-            variant="ghost"
-            className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800"
           >
             <LogOut className="w-4 h-4 mr-2" />
             Sign Out

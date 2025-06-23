@@ -66,18 +66,27 @@ const Missions = () => {
     }
   };
 
-  const claimReward = async (userMissionId: string) => {
+  const claimReward = async (userMissionId: string, xpReward: number) => {
     try {
-      const { error } = await supabase
+      // Mark mission as claimed
+      const { error: missionError } = await supabase
         .from('user_missions')
         .update({ is_claimed: true, claimed_at: new Date().toISOString() })
         .eq('id', userMissionId);
 
-      if (error) throw error;
+      if (missionError) throw missionError;
+
+      // Grant focus points instead of XP
+      const { error: focusError } = await supabase.rpc('grant_focus_points', {
+        user_profile_id: user?.id,
+        points_amount: xpReward
+      });
+
+      if (focusError) throw focusError;
 
       toast({
         title: "Reward Claimed!",
-        description: "Your XP has been added to your account.",
+        description: `You gained ${xpReward} Focus Points!`,
       });
 
       fetchData(); // Refresh data
@@ -117,7 +126,7 @@ const Missions = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-white">Missions</h1>
-                <p className="text-gray-400">Complete challenges to earn XP and level up.</p>
+                <p className="text-gray-400">Complete challenges to earn Focus Points and level up.</p>
               </div>
             </div>
           </header>
@@ -148,11 +157,11 @@ const Missions = () => {
 
               <Card className="bg-gray-800 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-300">Total XP Earned</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-300">Total Focus Points Earned</CardTitle>
                   <Star className="w-4 h-4 text-yellow-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-yellow-400">{totalRewards} XP</div>
+                  <div className="text-2xl font-bold text-yellow-400">{totalRewards} FP</div>
                 </CardContent>
               </Card>
             </div>
@@ -176,7 +185,7 @@ const Missions = () => {
                               </div>
                             </div>
                             <Badge variant="outline" className="text-blue-400 border-blue-400">
-                              {userMission.mission?.xp_reward} XP
+                              {userMission.mission?.xp_reward} FP
                             </Badge>
                           </div>
                         </CardHeader>
@@ -223,10 +232,10 @@ const Missions = () => {
                               {!userMission.is_claimed && (
                                 <Button 
                                   size="sm"
-                                  onClick={() => claimReward(userMission.id)}
+                                  onClick={() => claimReward(userMission.id, userMission.mission?.xp_reward || 0)}
                                   className="bg-yellow-600 hover:bg-yellow-700"
                                 >
-                                  Claim {userMission.mission?.xp_reward} XP
+                                  Claim {userMission.mission?.xp_reward} FP
                                 </Button>
                               )}
                             </div>
