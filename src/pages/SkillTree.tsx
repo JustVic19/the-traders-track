@@ -12,7 +12,17 @@ import { Tables } from '@/integrations/supabase/types';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 
-type UserSkill = Tables<'user_skills'>;
+// Define the actual user_skills structure from our migration
+interface UserSkill {
+  id: string;
+  user_id: string;
+  skill_name: string;
+  skill_level: number;
+  current_xp: number;
+  created_at: string;
+  updated_at: string;
+}
+
 type Profile = Tables<'profiles'>;
 
 interface SkillData {
@@ -54,11 +64,11 @@ const SkillTree = () => {
       if (profileError) throw profileError;
       setProfile(profileData);
 
-      // Fetch user skills
+      // Fetch user skills - using any type to bypass TypeScript issues with the auto-generated types
       const { data: skillsData, error: skillsError } = await supabase
         .from('user_skills')
         .select('*')
-        .eq('user_id', user?.id);
+        .eq('user_id', user?.id) as { data: UserSkill[] | null, error: any };
 
       if (skillsError) throw skillsError;
       setUserSkills(skillsData || []);
