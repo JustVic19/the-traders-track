@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { BarChart3, Target, Trophy, Store, Settings, LogOut, Coins, Star, Focus } from 'lucide-react';
@@ -65,25 +66,28 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
 
       <SidebarFooter className="p-4" style={{ backgroundColor: '#101623' }}>
         {/* Welcome Message and Actions Section */}
-        <div className="bg-gray-900 rounded-lg p-3 mb-4">
-          <div className="text-sm text-gray-300 mb-3 text-center">
-            Welcome, {profile?.username || 'Trader'}
+        <div className="bg-gray-900 rounded-lg p-4 mb-4">
+          <div className="text-center mb-4">
+            <h3 className="text-white font-medium text-sm">
+              Welcome back, {profile?.username || 'Trader'}!
+            </h3>
           </div>
+          <Separator className="mb-4 bg-gray-700" />
           <div className="space-y-2">
             <Button 
               variant="ghost" 
-              className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white"
+              className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white h-9"
               onClick={() => navigate('/settings')}
             >
-              <Settings className="w-4 h-4 mr-2" />
+              <Settings className="w-4 h-4 mr-3" />
               Settings
             </Button>
             <Button 
               variant="ghost" 
-              className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white"
+              className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white h-9"
               onClick={handleSignOut}
             >
-              <LogOut className="w-4 h-4 mr-2" />
+              <LogOut className="w-4 h-4 mr-3" />
               Sign Out
             </Button>
           </div>
@@ -125,3 +129,4 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
 };
 
 export default AppSidebar;
+
