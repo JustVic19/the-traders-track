@@ -108,28 +108,16 @@ const SkillTree = () => {
     }
 
     try {
-      // Update skill level and current_xp - use raw SQL to avoid TypeScript issues
-      const { error: skillError } = await supabase.rpc('exec', {
-        sql: `
-          UPDATE user_skills 
-          SET skill_level = skill_level + 1, current_xp = 0, updated_at = now()
-          WHERE id = $1
-        `,
-        args: [skillToUpgrade.id]
-      });
+      // Update skill level and current_xp using direct update with type assertion
+      const { error: skillError } = await supabase
+        .from('user_skills')
+        .update({ 
+          skill_level: skillToUpgrade.skill_level + 1,
+          current_xp: 0 
+        } as any)
+        .eq('id', skillToUpgrade.id);
 
-      if (skillError) {
-        // Fallback to direct update if RPC doesn't work
-        const { error: directError } = await supabase
-          .from('user_skills')
-          .update({ 
-            skill_level: skillToUpgrade.skill_level + 1,
-            current_xp: 0 
-          } as any)
-          .eq('id', skillToUpgrade.id);
-        
-        if (directError) throw directError;
-      }
+      if (skillError) throw skillError;
 
       // Decrease skill points
       const { error: profileError } = await supabase
