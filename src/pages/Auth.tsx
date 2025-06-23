@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -78,18 +79,31 @@ const Auth = () => {
 
   const handleSocialLogin = async (provider: 'google') => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log('Attempting Google login...');
+      console.log('Current origin:', window.location.origin);
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
       
-      if (error) throw error;
+      console.log('OAuth response:', { data, error });
+      
+      if (error) {
+        console.error('OAuth error:', error);
+        throw error;
+      }
     } catch (error: any) {
+      console.error('Social login error:', error);
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Google Login Error",
+        description: error.message || "Failed to sign in with Google. Please check your configuration.",
         variant: "destructive",
       });
     }
@@ -270,3 +284,4 @@ const Auth = () => {
 };
 
 export default Auth;
+
