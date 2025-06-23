@@ -80,8 +80,8 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
   };
 
   return (
-    <Sidebar className="bg-gray-900 border-gray-800">
-      <SidebarHeader className="p-6">
+    <Sidebar className="border-gray-800" style={{ backgroundColor: '#0B0F19' }}>
+      <SidebarHeader className="p-6" style={{ backgroundColor: '#0B0F19' }}>
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
             <span className="text-lg font-bold text-white">TT</span>
@@ -93,7 +93,7 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-4">
+      <SidebarContent className="px-4" style={{ backgroundColor: '#0B0F19' }}>
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.path}>
@@ -110,7 +110,7 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4" style={{ backgroundColor: '#0B0F19' }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-3 p-3 bg-gray-800 rounded-lg">
             <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
