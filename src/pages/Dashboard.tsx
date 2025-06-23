@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -174,7 +176,7 @@ const Dashboard = () => {
   // Show loading state
   if (loading || statsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0B0F19' }}>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-lg text-white">Loading dashboard...</div>
       </div>
     );
@@ -189,9 +191,9 @@ const Dashboard = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full" style={{ backgroundColor: '#0B0F19' }}>
         <AppSidebar profile={profile} />
-        <SidebarInset className="flex-1" style={{ backgroundColor: '#0B0F19' }}>
+        <SidebarInset className="flex-1">
           {/* Main Content Header */}
-          <header className="border-b border-gray-700 px-6 py-4" style={{ backgroundColor: '#1A1F2E' }}>
+          <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-white">Dashboard</h1>
@@ -207,7 +209,7 @@ const Dashboard = () => {
           <main className="container mx-auto px-6 py-8" style={{ backgroundColor: '#0B0F19' }}>
             {/* Hero Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-              <Card className="border-gray-700" style={{ backgroundColor: '#1A1F2E' }}>
+              <Card className="bg-gray-800 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-gray-300">Total P/L</CardTitle>
                   <TrendingUp className="w-4 h-4 text-green-500" />
@@ -219,7 +221,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-gray-700" style={{ backgroundColor: '#1A1F2E' }}>
+              <Card className="bg-gray-800 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-gray-300">Win Rate</CardTitle>
                   <Percent className="w-4 h-4 text-blue-500" />
@@ -231,7 +233,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-gray-700 border-blue-500" style={{ backgroundColor: '#1A1F2E' }}>
+              <Card className="bg-gray-800 border-gray-700 border-blue-500">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-gray-300">T-Track Score</CardTitle>
                   <Award className="w-4 h-4 text-blue-500" />
@@ -243,7 +245,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-gray-700" style={{ backgroundColor: '#1A1F2E' }}>
+              <Card className="bg-gray-800 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-gray-300">Profit Factor</CardTitle>
                   <BarChart3 className="w-4 h-4 text-purple-500" />
@@ -255,7 +257,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-gray-700" style={{ backgroundColor: '#1A1F2E' }}>
+              <Card className="bg-gray-800 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-gray-300">Avg. R/R</CardTitle>
                   <Target className="w-4 h-4 text-orange-500" />
