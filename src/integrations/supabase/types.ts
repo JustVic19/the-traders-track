@@ -230,9 +230,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      analyze_trade_and_grant_xp: {
+        Args: {
+          user_profile_id: string
+          trade_notes: string
+          trade_profit_loss: number
+          trade_type: string
+        }
+        Returns: undefined
+      }
       create_default_skills_for_user: {
         Args: { user_profile_id: string }
         Returns: undefined
+      }
+      grant_skill_xp: {
+        Args: {
+          user_profile_id: string
+          skill_name_param: string
+          xp_amount: number
+        }
+        Returns: undefined
+      }
+      upgrade_skill: {
+        Args: { user_profile_id: string; skill_name_param: string }
+        Returns: Json
       }
     }
     Enums: {

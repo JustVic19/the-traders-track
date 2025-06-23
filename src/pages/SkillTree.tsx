@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -86,53 +85,40 @@ const SkillTree = () => {
   };
 
   const upgradeSkill = async (skillName: string) => {
-    if (!profile || profile.skill_points < 1) {
+    if (!user?.id) {
       toast({
-        title: "Insufficient Skill Points",
-        description: "You need at least 1 skill point to upgrade a skill.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const skillToUpgrade = userSkills.find(skill => skill.skill_name === skillName);
-    if (!skillToUpgrade) return;
-
-    if (skillToUpgrade.skill_level >= 5) {
-      toast({
-        title: "Skill Maxed",
-        description: "This skill is already at maximum level.",
+        title: "Error",
+        description: "User not authenticated",
         variant: "destructive",
       });
       return;
     }
 
     try {
-      // Update skill level and current_xp using direct update with type assertion
-      const { error: skillError } = await supabase
-        .from('user_skills')
-        .update({ 
-          skill_level: skillToUpgrade.skill_level + 1,
-          current_xp: 0 
-        } as any)
-        .eq('id', skillToUpgrade.id);
+      // Call the secure backend function
+      const { data, error } = await supabase.rpc('upgrade_skill', {
+        user_profile_id: user.id,
+        skill_name_param: skillName
+      });
 
-      if (skillError) throw skillError;
+      if (error) throw error;
 
-      // Decrease skill points
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ skill_points: profile.skill_points - 1 })
-        .eq('id', user?.id);
+      // Check the result from the function
+      if (!data.success) {
+        toast({
+          title: "Upgrade Failed",
+          description: data.error,
+          variant: "destructive",
+        });
+        return;
+      }
 
-      if (profileError) throw profileError;
-
-      // Refresh data
+      // Success - refresh data to show updated values
       await fetchData();
 
       toast({
         title: "Skill Upgraded!",
-        description: `${skillName} has been upgraded to level ${skillToUpgrade.skill_level + 1}.`,
+        description: `${skillName} has been upgraded successfully.`,
         variant: "default",
       });
 
@@ -266,10 +252,15 @@ const SkillTree = () => {
                             {skill.level < skill.maxLevel && (
                               <Button 
                                 className="w-full"
-                                disabled={!profile || profile.skill_points < 1}
+                                disabled={!profile || profile.skill_points < 1 || skill.xp < skill.maxXp}
                                 onClick={() => upgradeSkill(skill.name)}
                               >
-                                {!profile || profile.skill_points < 1 ? "No Skill Points" : "Upgrade (1 SP)"}
+                                {!profile || profile.skill_points < 1 
+                                  ? "No Skill Points" 
+                                  : skill.xp < skill.maxXp 
+                                    ? `Need ${skill.maxXp - skill.xp} more XP`
+                                    : "Upgrade (1 SP)"
+                                }
                               </Button>
                             )}
                             

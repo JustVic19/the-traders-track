@@ -73,11 +73,25 @@ const TradeModal = ({ onTradeCreated }: TradeModalProps) => {
         profit_loss
       };
 
+      // Insert the trade
       const { error } = await supabase
         .from('trades')
         .insert([tradeData]);
 
       if (error) throw error;
+
+      // After successful trade insertion, grant XP based on trade data
+      try {
+        await supabase.rpc('analyze_trade_and_grant_xp', {
+          user_profile_id: user.id,
+          trade_notes: formData.notes || '',
+          trade_profit_loss: profit_loss,
+          trade_type: formData.trade_type
+        });
+      } catch (xpError) {
+        console.error('Error granting XP:', xpError);
+        // Don't fail the entire operation if XP granting fails
+      }
 
       toast({
         title: "Success",
@@ -237,15 +251,20 @@ const TradeModal = ({ onTradeCreated }: TradeModalProps) => {
           )}
 
           <div>
-            <Label htmlFor="notes" className="text-gray-300">Notes</Label>
+            <Label htmlFor="notes" className="text-gray-300">
+              Notes & Strategy Tags
+            </Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => handleInputChange('notes', e.target.value)}
-              placeholder="Trade notes, strategy, tags..."
+              placeholder="Trade notes, strategy, tags... (e.g., 'Head and Shoulders pattern', 'RSI oversold', 'Stop loss at support')"
               className="bg-gray-700 border-gray-600 text-white"
               rows={3}
             />
+            <p className="text-xs text-gray-400 mt-1">
+              💡 Tip: Include strategy keywords to earn skill XP (e.g., pattern names, indicators, risk management terms)
+            </p>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
