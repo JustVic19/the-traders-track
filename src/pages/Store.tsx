@@ -108,7 +108,7 @@ const Store = () => {
   if (loading) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gray-900">
+        <div className="min-h-screen flex w-full" style={{ backgroundColor: '#0B0F19' }}>
           <AppSidebar profile={profile} />
           <SidebarInset className="flex-1 flex items-center justify-center">
             <div className="text-lg text-white">Loading store...</div>
@@ -120,7 +120,7 @@ const Store = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gray-900">
+      <div className="min-h-screen flex w-full" style={{ backgroundColor: '#0B0F19' }}>
         <AppSidebar profile={profile} />
         <SidebarInset className="flex-1">
           {/* Header */}
@@ -138,7 +138,7 @@ const Store = () => {
           </header>
 
           {/* Content */}
-          <main className="container mx-auto px-6 py-8">
+          <main className="container mx-auto px-6 py-8" style={{ backgroundColor: '#0B0F19' }}>
             {storeItems.length === 0 ? (
               <Card className="bg-gray-800 border-gray-700">
                 <CardContent className="text-center py-12">
