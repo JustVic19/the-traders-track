@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -188,7 +189,7 @@ const Dashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gray-900">
+      <div className="min-h-screen flex w-full" style={{ backgroundColor: '#0B0F19' }}>
         <AppSidebar profile={profile} />
         <SidebarInset className="flex-1">
           {/* Main Content Header */}
@@ -205,7 +206,7 @@ const Dashboard = () => {
           </header>
 
           {/* Main Content */}
-          <main className="container mx-auto px-6 py-8">
+          <main className="container mx-auto px-6 py-8" style={{ backgroundColor: '#0B0F19' }}>
             {/* Hero Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
               <Card className="bg-gray-800 border-gray-700">
