@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Star, Lock } from 'lucide-react';
+import { CheckCircle, Star, Lock, Focus } from 'lucide-react';
+import FocusPointsInvestment from './FocusPointsInvestment';
 
 interface SkillCardProps {
   name: string;
@@ -13,7 +14,9 @@ interface SkillCardProps {
   xp: number;
   maxXp: number;
   skillPoints: number;
+  focusPoints: number;
   onUpgrade: (skillName: string) => void;
+  onFocusPointsInvested: () => void;
 }
 
 const SkillCard: React.FC<SkillCardProps> = ({
@@ -23,10 +26,15 @@ const SkillCard: React.FC<SkillCardProps> = ({
   xp,
   maxXp,
   skillPoints,
-  onUpgrade
+  focusPoints,
+  onUpgrade,
+  onFocusPointsInvested
 }) => {
+  const [showFocusInvestment, setShowFocusInvestment] = useState(false);
+  
   const canUpgrade = skillPoints >= 1 && xp >= maxXp && level < maxLevel;
   const isMaxed = level === maxLevel;
+  const canInvestFocusPoints = focusPoints > 0 && xp < maxXp && level < maxLevel;
 
   return (
     <Card className="bg-gray-800 border-gray-700">
@@ -64,24 +72,50 @@ const SkillCard: React.FC<SkillCardProps> = ({
           </div>
           
           {!isMaxed && (
-            <Button 
-              className="w-full"
-              disabled={!canUpgrade}
-              onClick={() => onUpgrade(name)}
-            >
-              {skillPoints < 1 
-                ? "No Skill Points" 
-                : xp < maxXp 
-                  ? `Need ${maxXp - xp} more XP`
-                  : "Upgrade (1 SP)"
-              }
-            </Button>
+            <div className="space-y-2">
+              <Button 
+                className="w-full"
+                disabled={!canUpgrade}
+                onClick={() => onUpgrade(name)}
+              >
+                {skillPoints < 1 
+                  ? "No Skill Points" 
+                  : xp < maxXp 
+                    ? `Need ${maxXp - xp} more XP`
+                    : "Upgrade (1 SP)"
+                }
+              </Button>
+
+              {canInvestFocusPoints && (
+                <Button
+                  variant="outline"
+                  className="w-full border-purple-600 text-purple-400 hover:bg-purple-600 hover:text-white"
+                  onClick={() => setShowFocusInvestment(!showFocusInvestment)}
+                >
+                  <Focus className="w-4 h-4 mr-2" />
+                  {showFocusInvestment ? 'Hide' : 'Use Focus Points'}
+                </Button>
+              )}
+            </div>
           )}
           
           {isMaxed && (
             <div className="text-center text-green-400 font-medium">
               ✨ Mastered
             </div>
+          )}
+
+          {showFocusInvestment && canInvestFocusPoints && (
+            <FocusPointsInvestment
+              skillName={name}
+              currentXp={xp}
+              maxXp={maxXp}
+              availableFocusPoints={focusPoints}
+              onInvestmentComplete={() => {
+                onFocusPointsInvested();
+                setShowFocusInvestment(false);
+              }}
+            />
           )}
         </div>
       </CardContent>

@@ -332,6 +332,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      invest_focus_points: {
+        Args: { skill_name_param: string; points_amount: number }
+        Returns: Json
+      }
       purchase_store_item: {
         Args: { item_id: string; user_profile_id: string }
         Returns: Json

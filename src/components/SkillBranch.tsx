@@ -15,7 +15,9 @@ interface SkillBranchProps {
   categoryIcon: string;
   skills: SkillData[];
   skillPoints: number;
+  focusPoints: number;
   onUpgrade: (skillName: string) => void;
+  onFocusPointsInvested: () => void;
 }
 
 const SkillBranch: React.FC<SkillBranchProps> = ({
@@ -23,7 +25,9 @@ const SkillBranch: React.FC<SkillBranchProps> = ({
   categoryIcon,
   skills,
   skillPoints,
-  onUpgrade
+  focusPoints,
+  onUpgrade,
+  onFocusPointsInvested
 }) => {
   return (
     <div>
@@ -42,7 +46,9 @@ const SkillBranch: React.FC<SkillBranchProps> = ({
             xp={skill.xp}
             maxXp={skill.maxXp}
             skillPoints={skillPoints}
+            focusPoints={focusPoints}
             onUpgrade={onUpgrade}
+            onFocusPointsInvested={onFocusPointsInvested}
           />
         ))}
       </div>

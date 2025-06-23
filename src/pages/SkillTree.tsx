@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -139,6 +138,10 @@ const SkillTree = () => {
     }
   };
 
+  const handleFocusPointsInvested = () => {
+    fetchData(); // Refresh data after Focus Points investment
+  };
+
   const getSkillCategories = (): SkillCategory[] => {
     const categories = [
       {
@@ -201,10 +204,14 @@ const SkillTree = () => {
                 <h1 className="text-2xl font-bold text-white">Skill Tree</h1>
                 <p className="text-gray-400">Develop your trading skills and unlock new abilities.</p>
               </div>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-6">
                 <div className="text-right">
                   <p className="text-sm text-gray-400">Available Skill Points</p>
                   <p className="text-xl font-bold text-blue-400">{profile?.skill_points || 0}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-400">Focus Points</p>
+                  <p className="text-xl font-bold text-purple-400">{profile?.focus_points || 0}</p>
                 </div>
               </div>
             </div>
@@ -220,7 +227,9 @@ const SkillTree = () => {
                   categoryIcon={category.icon}
                   skills={category.skills}
                   skillPoints={profile?.skill_points || 0}
+                  focusPoints={profile?.focus_points || 0}
                   onUpgrade={upgradeSkill}
+                  onFocusPointsInvested={handleFocusPointsInvested}
                 />
               ))}
             </div>
