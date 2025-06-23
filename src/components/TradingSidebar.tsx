@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import TradeModal from '@/components/TradeModal';
 
 interface TradingSidebarProps {
@@ -15,12 +15,7 @@ const TradingSidebar = ({ trades, onTradeCreated }: TradingSidebarProps) => {
   return (
     <div className="space-y-6">
       {/* Log New Trade Button */}
-      <TradeModal onTradeCreated={onTradeCreated}>
-        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-          <Plus className="w-4 h-4 mr-2" />
-          Log New Trade
-        </Button>
-      </TradeModal>
+      <TradeModal onTradeCreated={onTradeCreated} />
 
       {/* Recent Trades */}
       <Card className="bg-gray-800 border-gray-700">
