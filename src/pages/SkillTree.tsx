@@ -1,15 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { GitBranch, Star, Lock, CheckCircle, Coins } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
+import SkillBranch from '@/components/SkillBranch';
 
 // Define the actual user_skills structure from our migration
 interface UserSkill {
@@ -217,74 +214,14 @@ const SkillTree = () => {
           <main className="container mx-auto px-6 py-8" style={{ backgroundColor: '#0B0F19' }}>
             <div className="space-y-8">
               {skillCategories.map((category, categoryIndex) => (
-                <div key={categoryIndex}>
-                  <div className="flex items-center space-x-3 mb-6">
-                    <span className="text-2xl">{category.icon}</span>
-                    <h2 className="text-xl font-bold text-white">{category.name}</h2>
-                  </div>
-                  
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {category.skills.map((skill, skillIndex) => (
-                      <Card key={skillIndex} className="bg-gray-800 border-gray-700">
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-white flex items-center space-x-2">
-                              {skill.level === skill.maxLevel ? (
-                                <CheckCircle className="w-5 h-5 text-green-500" />
-                              ) : skill.level > 1 ? (
-                                <Star className="w-5 h-5 text-yellow-500" />
-                              ) : (
-                                <Lock className="w-5 h-5 text-gray-500" />
-                              )}
-                              <span>{skill.name}</span>
-                            </CardTitle>
-                            <Badge 
-                              variant={skill.level > 1 ? "default" : "secondary"}
-                              className={skill.level > 1 ? "bg-blue-600" : ""}
-                            >
-                              Level {skill.level}
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-400">Progress</span>
-                                <span className="text-white">{skill.xp}/{skill.maxXp} XP</span>
-                              </div>
-                              <Progress 
-                                value={(skill.xp / skill.maxXp) * 100} 
-                                className="h-2"
-                              />
-                            </div>
-                            
-                            {skill.level < skill.maxLevel && (
-                              <Button 
-                                className="w-full"
-                                disabled={!profile || profile.skill_points < 1 || skill.xp < skill.maxXp}
-                                onClick={() => upgradeSkill(skill.name)}
-                              >
-                                {!profile || profile.skill_points < 1 
-                                  ? "No Skill Points" 
-                                  : skill.xp < skill.maxXp 
-                                    ? `Need ${skill.maxXp - skill.xp} more XP`
-                                    : "Upgrade (1 SP)"
-                                }
-                              </Button>
-                            )}
-                            
-                            {skill.level === skill.maxLevel && (
-                              <div className="text-center text-green-400 font-medium">
-                                ✨ Mastered
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
+                <SkillBranch
+                  key={categoryIndex}
+                  categoryName={category.name}
+                  categoryIcon={category.icon}
+                  skills={category.skills}
+                  skillPoints={profile?.skill_points || 0}
+                  onUpgrade={upgradeSkill}
+                />
               ))}
             </div>
           </main>
