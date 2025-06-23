@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,7 +95,7 @@ const SkillTree = () => {
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-gray-900">
           <AppSidebar profile={profile} />
-          <SidebarInset className="flex-1 flex items-center justify-center">
+          <SidebarInset className="flex-1 flex items-center justify-center" style={{ backgroundColor: '#0B0F19' }}>
             <div className="text-lg text-white">Loading skill tree...</div>
           </SidebarInset>
         </div>
@@ -108,7 +107,7 @@ const SkillTree = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-900">
         <AppSidebar profile={profile} />
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1" style={{ backgroundColor: '#0B0F19' }}>
           {/* Header */}
           <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
             <div className="flex items-center justify-between">
@@ -126,7 +125,7 @@ const SkillTree = () => {
           </header>
 
           {/* Content */}
-          <main className="container mx-auto px-6 py-8">
+          <main className="container mx-auto px-6 py-8" style={{ backgroundColor: '#0B0F19' }}>
             <div className="space-y-8">
               {skillCategories.map((category, categoryIndex) => (
                 <div key={categoryIndex}>
