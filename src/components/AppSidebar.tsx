@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { BarChart3, Target, Trophy, Store, LogOut, Coins, Star, Focus } from 'lucide-react';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
+import { BarChart3, Target, Trophy, Store, LogOut, Coins, Star, Focus, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
+  const { state, toggleSidebar } = useSidebar();
 
   const menuItems = [
     { icon: BarChart3, label: 'Dashboard', path: '/dashboard' },
@@ -28,17 +29,35 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
     navigate('/auth');
   };
 
+  const isCollapsed = state === 'collapsed';
+
   return (
     <Sidebar className="border-r border-gray-800" style={{ backgroundColor: '#101623' }}>
       <SidebarHeader className="p-4" style={{ backgroundColor: '#101623' }}>
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">TT</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">TT</span>
+            </div>
+            {!isCollapsed && (
+              <div>
+                <h1 className="text-white font-semibold text-sm">The Traders</h1>
+                <h2 className="text-white font-semibold text-sm">Track</h2>
+              </div>
+            )}
           </div>
-          <div>
-            <h1 className="text-white font-semibold text-sm">The Traders</h1>
-            <h2 className="text-white font-semibold text-sm">Track</h2>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="h-8 w-8 text-gray-300 hover:bg-gray-800 hover:text-white"
+          >
+            {isCollapsed ? (
+              <ToggleRight className="w-4 h-4" />
+            ) : (
+              <ToggleLeft className="w-4 h-4" />
+            )}
+          </Button>
         </div>
       </SidebarHeader>
 
@@ -56,7 +75,7 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
                 style={{ backgroundColor: location.pathname === item.path ? undefined : 'transparent' }}
               >
                 <item.icon className="w-5 h-5" />
-                <span className="text-sm">{item.label}</span>
+                {!isCollapsed && <span className="text-sm">{item.label}</span>}
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
@@ -64,60 +83,64 @@ const AppSidebar = ({ profile }: AppSidebarProps) => {
       </SidebarContent>
 
       <SidebarFooter className="p-4 space-y-4" style={{ backgroundColor: '#101623' }}>
-        {/* User Stats Section */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-400">Level</span>
-            <span className="text-xs font-medium text-white">{profile?.level || 1}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-400 flex items-center">
-              <Coins className="w-3 h-3 mr-1" />
-              Alpha Coins
-            </span>
-            <span className="text-xs font-medium text-yellow-400">{profile?.alpha_coins || 0}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-400 flex items-center">
-              <Star className="w-3 h-3 mr-1" />
-              Skill Points
-            </span>
-            <span className="text-xs font-medium text-blue-400">{profile?.skill_points || 0}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-400 flex items-center">
-              <Focus className="w-3 h-3 mr-1" />
-              Focus Points
-            </span>
-            <span className="text-xs font-medium text-purple-400">{profile?.focus_points || 0}</span>
-          </div>
-        </div>
+        {!isCollapsed && (
+          <>
+            {/* User Stats Section */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-400">Level</span>
+                <span className="text-xs font-medium text-white">{profile?.level || 1}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-400 flex items-center">
+                  <Coins className="w-3 h-3 mr-1" />
+                  Alpha Coins
+                </span>
+                <span className="text-xs font-medium text-yellow-400">{profile?.alpha_coins || 0}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-400 flex items-center">
+                  <Star className="w-3 h-3 mr-1" />
+                  Skill Points
+                </span>
+                <span className="text-xs font-medium text-blue-400">{profile?.skill_points || 0}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-400 flex items-center">
+                  <Focus className="w-3 h-3 mr-1" />
+                  Focus Points
+                </span>
+                <span className="text-xs font-medium text-purple-400">{profile?.focus_points || 0}</span>
+              </div>
+            </div>
 
-        {/* User Info Section */}
-        <div className="bg-gray-800 rounded-lg p-3">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-medium">
-                {profile?.username?.charAt(0).toUpperCase() || 'T'}
-              </span>
+            {/* User Info Section */}
+            <div className="bg-gray-800 rounded-lg p-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-medium">
+                    {profile?.username?.charAt(0).toUpperCase() || 'T'}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white text-sm font-medium truncate">
+                    {profile?.username || 'Trader'}
+                  </p>
+                  <p className="text-gray-400 text-xs">Level {profile?.level || 1}</p>
+                </div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-medium truncate">
-                {profile?.username || 'Trader'}
-              </p>
-              <p className="text-gray-400 text-xs">Level {profile?.level || 1}</p>
-            </div>
-          </div>
-        </div>
+          </>
+        )}
 
         {/* Sign Out Button */}
         <Button 
           variant="ghost" 
-          className="w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white h-9 p-3"
+          className={`w-full justify-start text-gray-300 hover:bg-gray-800 hover:text-white h-9 ${isCollapsed ? 'p-2' : 'p-3'}`}
           onClick={handleSignOut}
         >
-          <LogOut className="w-4 h-4 mr-3" />
-          <span className="text-sm">Sign Out</span>
+          <LogOut className="w-4 h-4" />
+          {!isCollapsed && <span className="text-sm ml-3">Sign Out</span>}
         </Button>
       </SidebarFooter>
     </Sidebar>
