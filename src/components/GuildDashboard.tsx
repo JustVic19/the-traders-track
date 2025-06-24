@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -78,7 +77,23 @@ const GuildDashboard = ({ guildId, onBack }: GuildDashboardProps) => {
       });
 
       if (error) throw error;
-      return data as GuildMetrics;
+      
+      // Safely parse the Json response to GuildMetrics
+      if (data && typeof data === 'object' && !Array.isArray(data)) {
+        return data as unknown as GuildMetrics;
+      }
+      
+      // Return default metrics if data is invalid
+      return {
+        member_count: 0,
+        total_trades: 0,
+        winning_trades: 0,
+        win_rate: 0,
+        total_profit: 0,
+        total_loss: 0,
+        combined_pnl: 0,
+        combined_profit_factor: 0
+      } as GuildMetrics;
     },
   });
 
