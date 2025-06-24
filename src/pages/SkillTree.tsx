@@ -1,85 +1,49 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSkills } from '@/hooks/useSkills';
+import { useEntitlements } from '@/hooks/useEntitlements';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { Crown, Unlock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import SkillBranch from '@/components/SkillBranch';
-
-// Define the actual user_skills structure from our migration
-interface UserSkill {
-  id: string;
-  user_id: string;
-  skill_name: string;
-  skill_level: number;
-  current_xp: number;
-  created_at: string;
-  updated_at: string;
-}
-
-// Define the response type for the upgrade_skill function
-interface UpgradeSkillResponse {
-  success: boolean;
-  error?: string;
-  message?: string;
-}
+import SkillCard from '@/components/SkillCard';
 
 type Profile = Tables<'profiles'>;
 
-interface SkillData {
-  name: string;
-  level: number;
-  maxLevel: number;
-  xp: number;
-  maxXp: number;
-}
-
-interface SkillCategory {
-  name: string;
-  icon: string;
-  skills: SkillData[];
-}
-
 const SkillTree = () => {
   const { user } = useAuth();
+  const { userSkills, loading: skillsLoading } = useSkills();
+  const { hasRiskSimulator, hasAdvancedDashboard } = useEntitlements();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [userSkills, setUserSkills] = useState<UserSkill[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
-      fetchData();
+      fetchProfile();
     }
   }, [user]);
 
-  const fetchData = async () => {
+  const fetchProfile = async () => {
     try {
-      // Fetch profile
-      const { data: profileData, error: profileError } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user?.id)
         .single();
 
-      if (profileError) throw profileError;
-      setProfile(profileData);
-
-      // Fetch user skills - using any type to bypass TypeScript issues with the auto-generated types
-      const { data: skillsData, error: skillsError } = await supabase
-        .from('user_skills')
-        .select('*')
-        .eq('user_id', user?.id) as { data: UserSkill[] | null, error: any };
-
-      if (skillsError) throw skillsError;
-      setUserSkills(skillsData || []);
-
+      if (error) throw error;
+      setProfile(data);
     } catch (error: any) {
-      console.error('Error fetching data:', error);
       toast({
         title: "Error",
-        description: "Failed to load skill tree",
+        description: "Failed to load profile",
         variant: "destructive",
       });
     } finally {
@@ -87,151 +51,172 @@ const SkillTree = () => {
     }
   };
 
-  const upgradeSkill = async (skillName: string) => {
-    if (!user?.id) {
-      toast({
-        title: "Error",
-        description: "User not authenticated",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // Call the secure backend function
-      const { data, error } = await supabase.rpc('upgrade_skill', {
-        user_profile_id: user.id,
-        skill_name_param: skillName
-      });
-
-      if (error) throw error;
-
-      // Type assertion to handle the JSON response - convert to unknown first, then to our interface
-      const result = data as unknown as UpgradeSkillResponse;
-
-      // Check the result from the function
-      if (!result.success) {
-        toast({
-          title: "Upgrade Failed",
-          description: result.error,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Success - refresh data to show updated values
-      await fetchData();
-
-      toast({
-        title: "Skill Upgraded!",
-        description: `${skillName} has been upgraded successfully.`,
-        variant: "default",
-      });
-
-    } catch (error: any) {
-      console.error('Error upgrading skill:', error);
-      toast({
-        title: "Error",
-        description: "Failed to upgrade skill",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleFocusPointsInvested = () => {
-    fetchData(); // Refresh data after Focus Points investment
-  };
-
-  const getSkillCategories = (): SkillCategory[] => {
-    const categories = [
-      {
-        name: "Risk Management",
-        icon: "🛡️",
-        skillNames: ["Position Sizing", "Stop Loss Mastery", "Risk/Reward Optimization"]
-      },
-      {
-        name: "Technical Analysis", 
-        icon: "📊",
-        skillNames: ["Chart Pattern Recognition", "Indicator Mastery", "Support & Resistance"]
-      },
-      {
-        name: "Psychology",
-        icon: "🧠", 
-        skillNames: ["Emotional Control", "Discipline Mastery", "FOMO Resistance"]
-      }
-    ];
-
-    return categories.map(category => ({
-      name: category.name,
-      icon: category.icon,
-      skills: category.skillNames.map(skillName => {
-        const userSkill = userSkills.find(skill => skill.skill_name === skillName);
-        return {
-          name: skillName,
-          level: userSkill?.skill_level || 1,
-          maxLevel: 5,
-          xp: userSkill?.current_xp || 0,
-          maxXp: (userSkill?.skill_level || 1) * 100
-        };
-      })
-    }));
-  };
-
-  if (loading) {
+  if (loading || skillsLoading) {
     return (
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gray-900">
-          <AppSidebar profile={profile} />
-          <SidebarInset className="flex-1 flex items-center justify-center" style={{ backgroundColor: '#0B0F19' }}>
-            <div className="text-lg text-white">Loading skill tree...</div>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0B0F19' }}>
+        <div className="text-lg text-white">Loading skill tree...</div>
+      </div>
     );
   }
 
-  const skillCategories = getSkillCategories();
-
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gray-900">
+      <div className="min-h-screen flex w-full" style={{ backgroundColor: '#0B0F19' }}>
         <AppSidebar profile={profile} />
-        <SidebarInset className="flex-1" style={{ backgroundColor: '#0B0F19' }}>
-          {/* Header */}
-          <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+        <SidebarInset className="flex-1 w-full" style={{ backgroundColor: '#0B0F19' }}>
+          <header className="border-b border-gray-700 px-6 py-4 w-full" style={{ backgroundColor: '#1A1F2E' }}>
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-white">Skill Tree</h1>
-                <p className="text-gray-400">Develop your trading skills and unlock new abilities.</p>
+                <p className="text-gray-400">Unlock powerful trading features and abilities</p>
               </div>
-              <div className="flex items-center space-x-6">
-                <div className="text-right">
-                  <p className="text-sm text-gray-400">Available Skill Points</p>
-                  <p className="text-xl font-bold text-blue-400">{profile?.skill_points || 0}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-400">Focus Points</p>
-                  <p className="text-xl font-bold text-purple-400">{profile?.focus_points || 0}</p>
-                </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-400">Skill Points Available</p>
+                <p className="text-2xl font-bold text-blue-400">{profile?.skill_points || 0}</p>
               </div>
             </div>
           </header>
 
-          {/* Content */}
-          <main className="container mx-auto px-6 py-8" style={{ backgroundColor: '#0B0F19' }}>
-            <div className="space-y-8">
-              {skillCategories.map((category, categoryIndex) => (
-                <SkillBranch
-                  key={categoryIndex}
-                  categoryName={category.name}
-                  categoryIcon={category.icon}
-                  skills={category.skills}
-                  skillPoints={profile?.skill_points || 0}
-                  focusPoints={profile?.focus_points || 0}
-                  onUpgrade={upgradeSkill}
-                  onFocusPointsInvested={handleFocusPointsInvested}
-                />
-              ))}
+          <main className="w-full px-6 py-8" style={{ backgroundColor: '#0B0F19' }}>
+            {/* Unlocked Premium Features */}
+            {(hasRiskSimulator || hasAdvancedDashboard) && (
+              <Card className="bg-gray-800 border-gray-700 border-l-4 border-l-yellow-500 mb-8">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Crown className="w-5 h-5 mr-2 text-yellow-400" />
+                    Unlocked Premium Features
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {hasRiskSimulator && (
+                      <Badge variant="outline" className="border-yellow-500 text-yellow-400">
+                        <Unlock className="w-4 h-4 mr-1" />
+                        Risk Simulator
+                      </Badge>
+                    )}
+                    {hasAdvancedDashboard && (
+                      <Badge variant="outline" className="border-yellow-500 text-yellow-400">
+                        <Unlock className="w-4 h-4 mr-1" />
+                        Advanced Analytics Dashboard
+                      </Badge>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Skill Branches */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <SkillBranch
+                title="Risk Management"
+                color="red"
+                skills={[
+                  {
+                    name: "Position Sizing",
+                    description: "Master optimal position sizing techniques",
+                    level: 1,
+                    maxLevel: 5,
+                    xp: 0,
+                    maxXp: 100,
+                    unlocked: true
+                  },
+                  {
+                    name: "Stop Loss Mastery",
+                    description: "Advanced stop loss strategies",
+                    level: 1,
+                    maxLevel: 5,
+                    xp: 0,
+                    maxXp: 100,
+                    unlocked: true
+                  },
+                  {
+                    name: "Risk Simulator",
+                    description: "Unlock advanced risk simulation tools",
+                    level: hasRiskSimulator ? 1 : 0,
+                    maxLevel: 1,
+                    xp: hasRiskSimulator ? 100 : 0,
+                    maxXp: 100,
+                    unlocked: hasRiskSimulator,
+                    isPremium: true
+                  }
+                ]}
+                userSkills={userSkills}
+                onSkillUpgrade={() => {}}
+              />
+
+              <SkillBranch
+                title="Technical Analysis"
+                color="blue"
+                skills={[
+                  {
+                    name: "Chart Pattern Recognition",
+                    description: "Identify profitable chart patterns",
+                    level: 1,
+                    maxLevel: 5,
+                    xp: 0,
+                    maxXp: 100,
+                    unlocked: true
+                  },
+                  {
+                    name: "Indicator Mastery",
+                    description: "Master technical indicators",
+                    level: 1,
+                    maxLevel: 5,
+                    xp: 0,
+                    maxXp: 100,
+                    unlocked: true
+                  },
+                  {
+                    name: "Advanced Analytics",
+                    description: "Unlock premium dashboard features",
+                    level: hasAdvancedDashboard ? 1 : 0,
+                    maxLevel: 1,
+                    xp: hasAdvancedDashboard ? 100 : 0,
+                    maxXp: 100,
+                    unlocked: hasAdvancedDashboard,
+                    isPremium: true
+                  }
+                ]}
+                userSkills={userSkills}
+                onSkillUpgrade={() => {}}
+              />
+
+              <SkillBranch
+                title="Psychology"
+                color="purple"
+                skills={[
+                  {
+                    name: "Emotional Control",
+                    description: "Control emotions during trading",
+                    level: 1,
+                    maxLevel: 5,
+                    xp: 0,
+                    maxXp: 100,
+                    unlocked: true
+                  },
+                  {
+                    name: "Discipline Mastery",
+                    description: "Maintain trading discipline",
+                    level: 1,
+                    maxLevel: 5,
+                    xp: 0,
+                    maxXp: 100,
+                    unlocked: true
+                  },
+                  {
+                    name: "FOMO Resistance",
+                    description: "Resist fear of missing out",
+                    level: 1,
+                    maxLevel: 5,
+                    xp: 0,
+                    maxXp: 100,
+                    unlocked: true
+                  }
+                ]}
+                userSkills={userSkills}
+                onSkillUpgrade={() => {}}
+              />
             </div>
           </main>
         </SidebarInset>

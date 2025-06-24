@@ -1,13 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, Award, BarChart3, Percent, Target } from 'lucide-react';
+import { TrendingUp, Award, BarChart3, Percent, Target, Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
 import { useMissionProgress } from '@/hooks/useMissionProgress';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import { useEntitlements } from '@/hooks/useEntitlements';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AlphaCoinBalance from '@/components/AlphaCoinBalance';
 import OnboardingFlow from '@/components/OnboardingFlow';
@@ -15,6 +17,8 @@ import EquityCurveChart from '@/components/EquityCurveChart';
 import PerformanceCalendar from '@/components/PerformanceCalendar';
 import TradingSidebar from '@/components/TradingSidebar';
 import AppSidebar from '@/components/AppSidebar';
+import PremiumDashboardFeatures from '@/components/PremiumDashboardFeatures';
+import RiskSimulator from '@/components/RiskSimulator';
 
 type Profile = Tables<'profiles'>;
 
@@ -24,6 +28,7 @@ const Dashboard = () => {
   const { toast } = useToast();
   const { checkTradeBasedMissions } = useMissionProgress();
   const { trades, metrics, dailyTradeData, loading: metricsLoading, refetch } = useDashboardMetrics();
+  const { hasAdvancedDashboard, hasRiskSimulator, loading: entitlementsLoading } = useEntitlements();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
@@ -33,7 +38,8 @@ const Dashboard = () => {
   console.log('Dashboard: user =', user);
   console.log('Dashboard: loading =', loading);
   console.log('Dashboard: metrics =', metrics);
-  console.log('Dashboard: selectedDate =', selectedDate);
+  console.log('Dashboard: hasAdvancedDashboard =', hasAdvancedDashboard);
+  console.log('Dashboard: hasRiskSimulator =', hasRiskSimulator);
 
   useEffect(() => {
     console.log('Dashboard useEffect: user changed', user);
@@ -106,7 +112,7 @@ const Dashboard = () => {
   }
 
   // Show loading state
-  if (loading || profileLoading || metricsLoading) {
+  if (loading || profileLoading || metricsLoading || entitlementsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0B0F19' }}>
         <div className="text-lg text-white">Loading dashboard...</div>
@@ -128,8 +134,18 @@ const Dashboard = () => {
           <header className="border-b border-gray-700 px-6 py-4 w-full" style={{ backgroundColor: '#1A1F2E' }}>
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-                <p className="text-gray-400">Welcome back, here's your performance overview.</p>
+                <h1 className="text-2xl font-bold text-white flex items-center">
+                  Dashboard
+                  {hasAdvancedDashboard && (
+                    <Crown className="w-6 h-6 ml-2 text-yellow-400" />
+                  )}
+                </h1>
+                <p className="text-gray-400">
+                  {hasAdvancedDashboard 
+                    ? "Welcome to your Advanced Analytics Dashboard" 
+                    : "Welcome back, here's your performance overview."
+                  }
+                </p>
               </div>
               <div className="flex items-center space-x-4">
                 <AlphaCoinBalance balance={profile?.alpha_coins || 0} />
@@ -216,6 +232,20 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Premium Features Section - Only show if user has advanced dashboard */}
+            {hasAdvancedDashboard && (
+              <div className="mb-8">
+                <PremiumDashboardFeatures trades={trades} metrics={metrics} />
+              </div>
+            )}
+
+            {/* Risk Simulator - Only show if user has the entitlement */}
+            {hasRiskSimulator && (
+              <div className="mb-8">
+                <RiskSimulator />
+              </div>
+            )}
 
             {/* Three Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
