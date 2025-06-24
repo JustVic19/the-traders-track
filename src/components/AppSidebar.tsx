@@ -66,10 +66,10 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ profile }) => {
   };
 
   return (
-    <Sidebar className="border-r border-gray-700" style={{ backgroundColor: '#1A1F2E' }}>
+    <Sidebar className="border-r border-sidebar-border">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white text-lg font-bold px-4 py-6">
+          <SidebarGroupLabel className="text-sidebar-foreground text-lg font-bold px-4 py-6">
             AlphaTrader
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -80,8 +80,8 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ profile }) => {
                     onClick={() => handleNavigation(item.url)}
                     className={`w-full text-left p-3 rounded-lg transition-colors ${
                       location.pathname === item.url 
-                        ? 'bg-blue-600 text-white' 
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                        : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                     }`}
                   >
                     <item.icon className="w-5 h-5" />
@@ -94,11 +94,11 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ profile }) => {
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="p-4 border-t border-gray-700">
+      <SidebarFooter className="p-4 border-t border-sidebar-border">
         {profile && <AlphaCoinBalance balance={profile.alpha_coins} />}
         <SidebarMenuButton 
           onClick={handleSignOut}
-          className="w-full text-left p-3 rounded-lg text-gray-300 hover:bg-red-600 hover:text-white transition-colors mt-2"
+          className="w-full text-left p-3 rounded-lg text-sidebar-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors mt-2"
         >
           <LogOut className="w-5 h-5" />
           <span>Sign Out</span>
