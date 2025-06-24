@@ -90,7 +90,7 @@ const EquityCurveChart = ({ trades }: EquityCurveChartProps) => {
               size="sm"
               variant={viewMode === 'pnl' ? 'default' : 'outline'}
               onClick={() => handleViewModeChange('pnl')}
-              className={viewMode === 'pnl' ? 'bg-blue-600 text-white' : 'border-gray-600 text-gray-300 hover:bg-gray-700'}
+              className={viewMode === 'pnl' ? 'bg-blue-600 text-white' : 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700'}
             >
               P/L ($)
             </Button>
@@ -98,7 +98,7 @@ const EquityCurveChart = ({ trades }: EquityCurveChartProps) => {
               size="sm"
               variant={viewMode === 'rmultiple' ? 'default' : 'outline'}
               onClick={() => handleViewModeChange('rmultiple')}
-              className={viewMode === 'rmultiple' ? 'bg-blue-600 text-white' : 'border-gray-600 text-gray-300 hover:bg-gray-700'}
+              className={viewMode === 'rmultiple' ? 'bg-blue-600 text-white' : 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700'}
             >
               R-Multiple
             </Button>
@@ -106,7 +106,7 @@ const EquityCurveChart = ({ trades }: EquityCurveChartProps) => {
               size="sm"
               variant={xAxisMode === 'trade' ? 'default' : 'outline'}
               onClick={() => handleXAxisModeChange('trade')}
-              className={xAxisMode === 'trade' ? 'bg-blue-600 text-white' : 'border-gray-600 text-gray-300 hover:bg-gray-700'}
+              className={xAxisMode === 'trade' ? 'bg-blue-600 text-white' : 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700'}
             >
               By Trade
             </Button>
@@ -114,7 +114,7 @@ const EquityCurveChart = ({ trades }: EquityCurveChartProps) => {
               size="sm"
               variant={xAxisMode === 'date' ? 'default' : 'outline'}
               onClick={() => handleXAxisModeChange('date')}
-              className={xAxisMode === 'date' ? 'bg-blue-600 text-white' : 'border-gray-600 text-gray-300 hover:bg-gray-700'}
+              className={xAxisMode === 'date' ? 'bg-blue-600 text-white' : 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700'}
             >
               By Date
             </Button>

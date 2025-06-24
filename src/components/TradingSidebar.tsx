@@ -198,7 +198,7 @@ const TradingSidebar = ({ trades, selectedDate, onTradeCreated, onClearDate }: T
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Generate Weekly Insight
+                    Weekly Insight
                   </>
                 )}
               </Button>
