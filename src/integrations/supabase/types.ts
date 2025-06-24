@@ -68,6 +68,8 @@ export type Database = {
           trading_goal: string | null
           updated_at: string
           username: string | null
+          weekly_insights: string | null
+          weekly_insights_date: string | null
           xp: number
         }
         Insert: {
@@ -83,6 +85,8 @@ export type Database = {
           trading_goal?: string | null
           updated_at?: string
           username?: string | null
+          weekly_insights?: string | null
+          weekly_insights_date?: string | null
           xp?: number
         }
         Update: {
@@ -98,6 +102,8 @@ export type Database = {
           trading_goal?: string | null
           updated_at?: string
           username?: string | null
+          weekly_insights?: string | null
+          weekly_insights_date?: string | null
           xp?: number
         }
         Relationships: []
@@ -404,6 +410,14 @@ export type Database = {
       generate_daily_missions_for_user: {
         Args: { target_user_id: string }
         Returns: undefined
+      }
+      generate_weekly_insights_for_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      generate_weekly_insights_for_user: {
+        Args: { target_user_id: string }
+        Returns: Json
       }
       grant_monthly_pro_coins: {
         Args: Record<PropertyKey, never>
