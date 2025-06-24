@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,10 +28,12 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   console.log('Dashboard: user =', user);
   console.log('Dashboard: loading =', loading);
   console.log('Dashboard: metrics =', metrics);
+  console.log('Dashboard: selectedDate =', selectedDate);
 
   useEffect(() => {
     console.log('Dashboard useEffect: user changed', user);
@@ -93,6 +94,10 @@ const Dashboard = () => {
     // Refetch metrics to update T-Track Score and all other metrics
     refetch();
     checkTradeBasedMissions();
+  };
+
+  const handleDateSelect = (date: string | null) => {
+    setSelectedDate(date);
   };
 
   // Show onboarding flow for new users
@@ -219,13 +224,22 @@ const Dashboard = () => {
                 {/* Equity Curve Chart with real data */}
                 <EquityCurveChart trades={trades} />
                 
-                {/* Performance Calendar with real daily trade data */}
-                <PerformanceCalendar dailyData={dailyTradeData} />
+                {/* Performance Calendar with real daily trade data and date selection */}
+                <PerformanceCalendar 
+                  dailyData={dailyTradeData} 
+                  selectedDate={selectedDate}
+                  onDateSelect={handleDateSelect}
+                />
               </div>
 
               {/* Right Sidebar - Spans 1 column */}
               <div className="lg:col-span-1">
-                <TradingSidebar trades={trades} onTradeCreated={handleTradeCreated} />
+                <TradingSidebar 
+                  trades={trades} 
+                  selectedDate={selectedDate}
+                  onTradeCreated={handleTradeCreated} 
+                  onClearDate={() => setSelectedDate(null)}
+                />
               </div>
             </div>
           </main>

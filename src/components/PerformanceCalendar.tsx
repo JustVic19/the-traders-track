@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Settings, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Settings, Info, X } from 'lucide-react';
 
 interface DailyTradeData {
   date: string;
@@ -14,9 +14,15 @@ interface DailyTradeData {
 
 interface PerformanceCalendarProps {
   dailyData?: DailyTradeData[];
+  selectedDate?: string | null;
+  onDateSelect?: (date: string | null) => void;
 }
 
-const PerformanceCalendar: React.FC<PerformanceCalendarProps> = ({ dailyData = [] }) => {
+const PerformanceCalendar: React.FC<PerformanceCalendarProps> = ({ 
+  dailyData = [], 
+  selectedDate = null, 
+  onDateSelect 
+}) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   
   const getPerformanceColor = (performance: string, pnl: number) => {
@@ -29,6 +35,19 @@ const PerformanceCalendar: React.FC<PerformanceCalendarProps> = ({ dailyData = [
       case 'poor': return 'bg-red-500';
       case 'terrible': return 'bg-red-600';
       default: return 'bg-gray-700';
+    }
+  };
+
+  const handleDayClick = (date: string) => {
+    if (onDateSelect) {
+      // If clicking the same date, clear it; otherwise set it
+      onDateSelect(selectedDate === date ? null : date);
+    }
+  };
+
+  const handleClearSelection = () => {
+    if (onDateSelect) {
+      onDateSelect(null);
     }
   };
 
@@ -54,12 +73,14 @@ const PerformanceCalendar: React.FC<PerformanceCalendarProps> = ({ dailyData = [
     for (let i = 1; i <= daysInMonth; i++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
       const dayData = dailyDataMap.get(dateStr);
+      const isSelected = selectedDate === dateStr;
       
       calendarDays.push({
         day: i,
         date: dateStr,
         data: dayData,
-        className: dayData ? getPerformanceColor(dayData.performance, dayData.pnl) : 'bg-gray-800'
+        className: dayData ? getPerformanceColor(dayData.performance, dayData.pnl) : 'bg-gray-800',
+        isSelected
       });
     }
     
@@ -162,6 +183,17 @@ const PerformanceCalendar: React.FC<PerformanceCalendarProps> = ({ dailyData = [
             >
               This month
             </Button>
+            {selectedDate && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearSelection}
+                className="text-gray-400 hover:text-white bg-red-900/30 border border-red-700 px-3 py-1 text-xs"
+              >
+                <X className="w-3 h-3 mr-1" />
+                Clear ({new Date(selectedDate).toLocaleDateString()})
+              </Button>
+            )}
           </div>
           <div className="flex items-center space-x-6">
             <div className="text-right">
@@ -207,10 +239,13 @@ const PerformanceCalendar: React.FC<PerformanceCalendarProps> = ({ dailyData = [
                     {week.map((day, dayIndex) => (
                       <div
                         key={dayIndex}
-                        className={`aspect-square flex items-center justify-center text-white text-sm font-medium border border-gray-700 ${
-                          day ? `${day.className} cursor-pointer hover:opacity-80 transition-opacity relative group` : 'bg-gray-800'
+                        className={`aspect-square flex items-center justify-center text-white text-sm font-medium border transition-all ${
+                          day ? `${day.className} cursor-pointer hover:opacity-80 relative group ${
+                            day.isSelected ? 'border-blue-400 border-2 shadow-lg shadow-blue-400/20' : 'border-gray-700'
+                          }` : 'bg-gray-800 border-gray-700'
                         }`}
                         title={day?.data ? `${day.date}: $${day.data.pnl.toFixed(2)} (${day.data.tradeCount} trades)` : ''}
+                        onClick={() => day?.data && handleDayClick(day.date)}
                       >
                         {day?.day || ''}
                         {day?.data && (
