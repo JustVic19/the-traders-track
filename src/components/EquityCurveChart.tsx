@@ -39,9 +39,10 @@ const EquityCurveChart = ({ trades }: EquityCurveChartProps) => {
     return closedTrades.map((trade, index) => {
       runningPnL += trade.profit_loss || 0;
       
-      // Calculate R-multiple (simplified: profit_loss / assumed risk)
-      // For now, we'll use a simplified calculation
-      const riskAmount = (trade.entry_price || 0) * 0.02; // Assume 2% risk
+      // Calculate R-multiple (risk:reward ratio)
+      // Assume 2% risk of entry price as default risk amount if not specified in notes
+      const entryPrice = trade.entry_price || 0;
+      const riskAmount = entryPrice * 0.02; // 2% of entry price as risk
       const rMultiple = riskAmount > 0 ? (trade.profit_loss || 0) / riskAmount : 0;
       runningRMultiple += rMultiple;
 
@@ -63,12 +64,20 @@ const EquityCurveChart = ({ trades }: EquityCurveChartProps) => {
 
   const formatTooltipValue = (value: number, name: string) => {
     if (name === 'pnl') {
-      return [`$${value.toFixed(2)}`, 'P/L'];
+      return [`$${value.toFixed(2)}`, 'Cumulative P/L'];
     }
     if (name === 'rmultiple') {
-      return [`${value.toFixed(2)}R`, 'R-Multiple'];
+      return [`${value.toFixed(2)}R`, 'Cumulative R-Multiple'];
     }
     return [value, name];
+  };
+
+  const handleViewModeChange = (mode: 'pnl' | 'rmultiple') => {
+    setViewMode(mode);
+  };
+
+  const handleXAxisModeChange = (mode: 'trade' | 'date') => {
+    setXAxisMode(mode);
   };
 
   return (
@@ -80,32 +89,32 @@ const EquityCurveChart = ({ trades }: EquityCurveChartProps) => {
             <Button
               size="sm"
               variant={viewMode === 'pnl' ? 'default' : 'outline'}
-              onClick={() => setViewMode('pnl')}
-              className={viewMode === 'pnl' ? 'bg-blue-600 text-white' : 'border-gray-600 text-gray-300'}
+              onClick={() => handleViewModeChange('pnl')}
+              className={viewMode === 'pnl' ? 'bg-blue-600 text-white' : 'border-gray-600 text-gray-300 hover:bg-gray-700'}
             >
               P/L ($)
             </Button>
             <Button
               size="sm"
               variant={viewMode === 'rmultiple' ? 'default' : 'outline'}
-              onClick={() => setViewMode('rmultiple')}
-              className={viewMode === 'rmultiple' ? 'bg-blue-600 text-white' : 'border-gray-600 text-gray-300'}
+              onClick={() => handleViewModeChange('rmultiple')}
+              className={viewMode === 'rmultiple' ? 'bg-blue-600 text-white' : 'border-gray-600 text-gray-300 hover:bg-gray-700'}
             >
               R-Multiple
             </Button>
             <Button
               size="sm"
               variant={xAxisMode === 'trade' ? 'default' : 'outline'}
-              onClick={() => setXAxisMode('trade')}
-              className={xAxisMode === 'trade' ? 'bg-blue-600 text-white' : 'border-gray-600 text-gray-300'}
+              onClick={() => handleXAxisModeChange('trade')}
+              className={xAxisMode === 'trade' ? 'bg-blue-600 text-white' : 'border-gray-600 text-gray-300 hover:bg-gray-700'}
             >
               By Trade
             </Button>
             <Button
               size="sm"
               variant={xAxisMode === 'date' ? 'default' : 'outline'}
-              onClick={() => setXAxisMode('date')}
-              className={xAxisMode === 'date' ? 'bg-blue-600 text-white' : 'border-gray-600 text-gray-300'}
+              onClick={() => handleXAxisModeChange('date')}
+              className={xAxisMode === 'date' ? 'bg-blue-600 text-white' : 'border-gray-600 text-gray-300 hover:bg-gray-700'}
             >
               By Date
             </Button>

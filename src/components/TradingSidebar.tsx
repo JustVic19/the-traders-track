@@ -3,8 +3,9 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Loader2 } from 'lucide-react';
 import TradeModal from '@/components/TradeModal';
+import { useAIInsights } from '@/hooks/useAIInsights';
 
 interface TradingSidebarProps {
   trades: any[];
@@ -12,6 +13,12 @@ interface TradingSidebarProps {
 }
 
 const TradingSidebar = ({ trades, onTradeCreated }: TradingSidebarProps) => {
+  const { insight, loading, generateInsight } = useAIInsights();
+
+  const handleGenerateInsight = () => {
+    generateInsight(trades);
+  };
+
   return (
     <div className="space-y-6">
       {/* Log New Trade Button */}
@@ -58,15 +65,32 @@ const TradingSidebar = ({ trades, onTradeCreated }: TradingSidebarProps) => {
           <CardTitle className="text-white">Coach Vega's Insights</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-gray-300 text-sm">
-            Click the button below to generate a personalized insight based on your recent trades.
-          </p>
+          {insight ? (
+            <div className="p-3 bg-blue-900/30 border border-blue-700 rounded-lg">
+              <p className="text-blue-100 text-sm leading-relaxed">{insight}</p>
+            </div>
+          ) : (
+            <p className="text-gray-300 text-sm">
+              Click the button below to generate a personalized insight based on your recent trades.
+            </p>
+          )}
           <Button 
             variant="outline" 
             className="w-full border-gray-600 text-gray-300 hover:bg-gray-700"
+            onClick={handleGenerateInsight}
+            disabled={loading}
           >
-            <Sparkles className="w-4 h-4 mr-2" />
-            Generate AI Insight
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate AI Insight
+              </>
+            )}
           </Button>
         </CardContent>
       </Card>
