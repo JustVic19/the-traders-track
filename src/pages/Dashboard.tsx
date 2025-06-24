@@ -131,7 +131,7 @@ const Dashboard = () => {
         <SidebarInset className="flex-1 w-full" style={{ backgroundColor: '#0B0F19' }}>
           {/* Main Content Header */}
           <header className="border-b border-gray-700 px-6 py-4 w-full" style={{ backgroundColor: '#1A1F2E' }}>
-            <div className="max-w-5xl mx-auto flex items-center justify-between">
+            <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center">
                   Dashboard
@@ -153,8 +153,8 @@ const Dashboard = () => {
           </header>
 
           {/* Main Content */}
-          <main className="w-full px-6 py-8" style={{ backgroundColor: '#0B0F19' }}>
-            <div className="max-w-5xl mx-auto space-y-8">
+          <main className="w-full px-6 py-8 flex-1" style={{ backgroundColor: '#0B0F19' }}>
+            <div className="h-full space-y-8">
               {/* Hero Metrics */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                 <Card className="bg-gray-800 border-gray-700">
@@ -248,7 +248,7 @@ const Dashboard = () => {
               )}
 
               {/* Three Column Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1">
                 {/* Main Content Area - Spans 3 columns */}
                 <div className="lg:col-span-3 space-y-6">
                   {/* Equity Curve Chart with real data */}
