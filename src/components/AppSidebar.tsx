@@ -105,7 +105,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ profile }) => {
                 <User className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <div className="text-white font-medium">{profile.display_name || 'Trader'}</div>
+                <div className="text-white font-medium">{profile.username || 'Trader'}</div>
                 <div className="text-gray-400 text-sm">Level {profile.level || 1}</div>
               </div>
             </div>
