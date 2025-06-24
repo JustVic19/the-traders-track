@@ -16,6 +16,17 @@ interface GuildDashboardProps {
   onBack: () => void;
 }
 
+interface GuildMetrics {
+  member_count: number;
+  total_trades: number;
+  winning_trades: number;
+  win_rate: number;
+  total_profit: number;
+  total_loss: number;
+  combined_pnl: number;
+  combined_profit_factor: number;
+}
+
 const GuildDashboard = ({ guildId, onBack }: GuildDashboardProps) => {
   const { user } = useAuth();
 
@@ -67,7 +78,7 @@ const GuildDashboard = ({ guildId, onBack }: GuildDashboardProps) => {
       });
 
       if (error) throw error;
-      return data;
+      return data as GuildMetrics;
     },
   });
 
