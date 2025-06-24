@@ -11,6 +11,7 @@ import Store from "./pages/Store";
 import Missions from "./pages/Missions";
 import SkillTree from "./pages/SkillTree";
 import AvatarCustomization from "./pages/AvatarCustomization";
+import Guilds from "./pages/Guilds";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const AppRoutes = () => {
           <Route path="/missions" element={<Missions />} />
           <Route path="/skills" element={<SkillTree />} />
           <Route path="/avatar" element={<AvatarCustomization />} />
+          <Route path="/guilds" element={<Guilds />} />
         </>
       ) : (
         <Route path="/" element={<Index />} />

@@ -9,6 +9,232 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      guild_achievements: {
+        Row: {
+          achievement_data: Json | null
+          achievement_type: string
+          earned_at: string
+          guild_id: string
+          id: string
+        }
+        Insert: {
+          achievement_data?: Json | null
+          achievement_type: string
+          earned_at?: string
+          guild_id: string
+          id?: string
+        }
+        Update: {
+          achievement_data?: Json | null
+          achievement_type?: string
+          earned_at?: string
+          guild_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_achievements_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guild_members: {
+        Row: {
+          guild_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          guild_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          guild_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_members_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guild_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guild_messages: {
+        Row: {
+          created_at: string
+          guild_id: string
+          id: string
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          guild_id: string
+          id?: string
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          guild_id?: string
+          id?: string
+          message?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_messages_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guild_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guild_tournament_results: {
+        Row: {
+          combined_profit_factor: number
+          created_at: string
+          guild_id: string
+          id: string
+          members_count: number
+          rank: number
+          total_trades: number
+          tournament_id: string
+        }
+        Insert: {
+          combined_profit_factor?: number
+          created_at?: string
+          guild_id: string
+          id?: string
+          members_count: number
+          rank: number
+          total_trades?: number
+          tournament_id: string
+        }
+        Update: {
+          combined_profit_factor?: number
+          created_at?: string
+          guild_id?: string
+          id?: string
+          members_count?: number
+          rank?: number
+          total_trades?: number
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_tournament_results_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guild_tournament_results_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "guild_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guild_tournaments: {
+        Row: {
+          created_at: string
+          id: string
+          status: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
+      guilds: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          invite_code: string | null
+          is_private: boolean
+          max_members: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          invite_code?: string | null
+          is_private?: boolean
+          max_members?: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          invite_code?: string | null
+          is_private?: boolean
+          max_members?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guilds_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       missions: {
         Row: {
           created_at: string
@@ -408,6 +634,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      calculate_guild_metrics: {
+        Args: { guild_id_param: string; start_date?: string; end_date?: string }
+        Returns: Json
+      }
+      complete_weekly_tournament: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_default_skills_for_user: {
         Args: { user_profile_id: string }
         Returns: undefined
@@ -455,6 +689,10 @@ export type Database = {
       purchase_store_item: {
         Args: { item_id: string; user_profile_id: string }
         Returns: Json
+      }
+      start_weekly_tournament: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       upgrade_skill: {
         Args: { user_profile_id: string; skill_name_param: string }
