@@ -185,8 +185,8 @@ const TradingSidebar = ({ trades, selectedDate, onTradeCreated, onClearDate }: T
                 Coach Vega analyzes your weekly performance automatically. Generate a manual insight or check back later for your weekly summary.
               </p>
               <Button 
-                variant="outline" 
-                className="w-full border-gray-600 text-gray-300 hover:bg-gray-700"
+                variant="secondary" 
+                className="w-full bg-transparent border border-blue-500 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 transition-colors"
                 onClick={handleGenerateWeeklyInsight}
                 disabled={weeklyLoading}
               >
@@ -221,9 +221,9 @@ const TradingSidebar = ({ trades, selectedDate, onTradeCreated, onClearDate }: T
                 </p>
               )}
               <Button 
-                variant="outline" 
+                variant="secondary" 
                 size="sm"
-                className="w-full border-gray-600 text-gray-400 hover:bg-gray-700"
+                className="w-full bg-transparent border border-blue-500 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 transition-colors"
                 onClick={handleGenerateInsight}
                 disabled={loading}
               >
