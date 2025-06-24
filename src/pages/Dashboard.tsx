@@ -215,10 +215,10 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               {/* Main Content Area - Spans 3 columns */}
               <div className="lg:col-span-3 space-y-6">
-                {/* Equity Curve Chart */}
+                {/* Equity Curve Chart with real data */}
                 <EquityCurveChart trades={trades} />
                 
-                {/* Performance Calendar with daily trade data */}
+                {/* Performance Calendar with real daily trade data */}
                 <PerformanceCalendar dailyData={dailyTradeData} />
               </div>
 
