@@ -1,40 +1,61 @@
 
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import Missions from "./pages/Missions";
+import Auth from "./pages/Auth";
 import Store from "./pages/Store";
+import Missions from "./pages/Missions";
 import SkillTree from "./pages/SkillTree";
+import AvatarCustomization from "./pages/AvatarCustomization";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+const AppRoutes = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0B0F19]">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route path="/auth" element={<Auth />} />
+      {user ? (
+        <>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/store" element={<Store />} />
+          <Route path="/missions" element={<Missions />} />
+          <Route path="/skills" element={<SkillTree />} />
+          <Route path="/avatar" element={<AvatarCustomization />} />
+        </>
+      ) : (
+        <Route path="/" element={<Index />} />
+      )}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/missions" element={<Missions />} />
-            <Route path="/store" element={<Store />} />
-            <Route path="/skills" element={<SkillTree />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;

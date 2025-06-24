@@ -58,6 +58,9 @@ export type Database = {
         Row: {
           alpha_coins: number
           created_at: string
+          equipped_aura: string | null
+          equipped_hat: string | null
+          equipped_outfit: string | null
           focus_points: number
           id: string
           level: number
@@ -75,6 +78,9 @@ export type Database = {
         Insert: {
           alpha_coins?: number
           created_at?: string
+          equipped_aura?: string | null
+          equipped_hat?: string | null
+          equipped_outfit?: string | null
           focus_points?: number
           id: string
           level?: number
@@ -92,6 +98,9 @@ export type Database = {
         Update: {
           alpha_coins?: number
           created_at?: string
+          equipped_aura?: string | null
+          equipped_hat?: string | null
+          equipped_outfit?: string | null
           focus_points?: number
           id?: string
           level?: number
@@ -402,6 +411,14 @@ export type Database = {
       create_default_skills_for_user: {
         Args: { user_profile_id: string }
         Returns: undefined
+      }
+      equip_avatar_item: {
+        Args: {
+          user_profile_id: string
+          item_id: string
+          item_category: string
+        }
+        Returns: Json
       }
       generate_daily_missions_for_all_users: {
         Args: Record<PropertyKey, never>
