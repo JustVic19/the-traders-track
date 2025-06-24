@@ -14,6 +14,9 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          is_template: boolean
+          max_value: number | null
+          min_value: number | null
           mission_key: string
           target_value: number
           title: string
@@ -25,6 +28,9 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
+          is_template?: boolean
+          max_value?: number | null
+          min_value?: number | null
           mission_key: string
           target_value?: number
           title: string
@@ -36,6 +42,9 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          is_template?: boolean
+          max_value?: number | null
+          min_value?: number | null
           mission_key?: string
           target_value?: number
           title?: string
@@ -191,6 +200,74 @@ export type Database = {
           },
         ]
       }
+      user_generated_missions: {
+        Row: {
+          claimed_at: string | null
+          completed_at: string | null
+          created_at: string
+          current_progress: number
+          description: string
+          expires_at: string
+          generated_date: string
+          id: string
+          is_claimed: boolean
+          is_completed: boolean
+          mission_type: string
+          target_value: number
+          template_id: string
+          title: string
+          updated_at: string
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          current_progress?: number
+          description: string
+          expires_at: string
+          generated_date?: string
+          id?: string
+          is_claimed?: boolean
+          is_completed?: boolean
+          mission_type: string
+          target_value: number
+          template_id: string
+          title: string
+          updated_at?: string
+          user_id: string
+          xp_reward: number
+        }
+        Update: {
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          current_progress?: number
+          description?: string
+          expires_at?: string
+          generated_date?: string
+          id?: string
+          is_claimed?: boolean
+          is_completed?: boolean
+          mission_type?: string
+          target_value?: number
+          template_id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          xp_reward?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_generated_missions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_inventory: {
         Row: {
           id: string
@@ -318,6 +395,14 @@ export type Database = {
       }
       create_default_skills_for_user: {
         Args: { user_profile_id: string }
+        Returns: undefined
+      }
+      generate_daily_missions_for_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      generate_daily_missions_for_user: {
+        Args: { target_user_id: string }
         Returns: undefined
       }
       grant_monthly_pro_coins: {

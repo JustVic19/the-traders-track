@@ -5,23 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Trophy, Target, Star, Coins } from 'lucide-react';
+import { Trophy, Target, Star, RefreshCw, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
+import { useDynamicMissions } from '@/hooks/useDynamicMissions';
 
-type UserMission = Tables<'user_missions'> & {
-  mission: Tables<'missions'>;
-};
+type UserGeneratedMission = Tables<'user_generated_missions'>;
 type Profile = Tables<'profiles'>;
 
 const Missions = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { generateDailyMissions, checkAndUpdateMissionsProgress, loading: missionLoading } = useDynamicMissions();
+  
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [userMissions, setUserMissions] = useState<UserMission[]>([]);
+  const [userMissions, setUserMissions] = useState<UserGeneratedMission[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,18 +43,29 @@ const Missions = () => {
       if (profileError) throw profileError;
       setProfile(profileData);
 
-      // Fetch user missions with mission details
+      // Fetch user generated missions
       const { data: missionsData, error: missionsError } = await supabase
-        .from('user_missions')
-        .select(`
-          *,
-          mission:missions(*)
-        `)
+        .from('user_generated_missions')
+        .select('*')
         .eq('user_id', user?.id)
+        .gte('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false });
 
       if (missionsError) throw missionsError;
-      setUserMissions(missionsData as UserMission[] || []);
+      setUserMissions(missionsData || []);
+
+      // Update mission progress based on current trades
+      await checkAndUpdateMissionsProgress();
+
+      // Refetch missions after progress update
+      const { data: updatedMissions } = await supabase
+        .from('user_generated_missions')
+        .select('*')
+        .eq('user_id', user?.id)
+        .gte('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false });
+
+      setUserMissions(updatedMissions || []);
 
     } catch (error: any) {
       console.error('Error fetching data:', error);
@@ -67,13 +79,13 @@ const Missions = () => {
     }
   };
 
-  const claimReward = async (userMissionId: string, xpReward: number) => {
+  const claimReward = async (missionId: string, xpReward: number) => {
     try {
       // Mark mission as claimed
       const { error: missionError } = await supabase
-        .from('user_missions')
+        .from('user_generated_missions')
         .update({ is_claimed: true, claimed_at: new Date().toISOString() })
-        .eq('id', userMissionId);
+        .eq('id', missionId);
 
       if (missionError) throw missionError;
 
@@ -103,10 +115,28 @@ const Missions = () => {
     }
   };
 
+  const handleGenerateNewMissions = async () => {
+    await generateDailyMissions();
+    fetchData(); // Refresh the missions list
+  };
+
+  const formatTimeRemaining = (expiresAt: string) => {
+    const now = new Date();
+    const expiry = new Date(expiresAt);
+    const diffMs = expiry.getTime() - now.getTime();
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m left`;
+    }
+    return `${minutes}m left`;
+  };
+
   if (loading) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gray-900">
+        <div className="min-h-screen flex w-full" style={{ backgroundColor: '#0B0F19' }}>
           <AppSidebar profile={profile} />
           <SidebarInset className="flex-1 flex items-center justify-center">
             <div className="text-lg text-white">Loading missions...</div>
@@ -116,27 +146,35 @@ const Missions = () => {
     );
   }
 
-  const completedMissions = userMissions.filter(m => m.is_completed);
   const activeMissions = userMissions.filter(m => !m.is_completed);
-  const totalRewards = completedMissions.reduce((sum, m) => sum + (m.mission?.xp_reward || 0), 0);
+  const completedMissions = userMissions.filter(m => m.is_completed);
+  const totalRewards = completedMissions.reduce((sum, m) => sum + m.xp_reward, 0);
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gray-900">
+      <div className="min-h-screen flex w-full" style={{ backgroundColor: '#0B0F19' }}>
         <AppSidebar profile={profile} />
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1" style={{ backgroundColor: '#0B0F19' }}>
           {/* Header */}
-          <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+          <header className="border-b border-gray-700 px-6 py-4" style={{ backgroundColor: '#1A1F2E' }}>
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-white">Missions</h1>
+                <h1 className="text-2xl font-bold text-white">Daily Missions</h1>
                 <p className="text-gray-400">Complete challenges to earn Focus Points and level up.</p>
               </div>
+              <Button 
+                onClick={handleGenerateNewMissions}
+                disabled={missionLoading}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${missionLoading ? 'animate-spin' : ''}`} />
+                Generate New Missions
+              </Button>
             </div>
           </header>
 
           {/* Content */}
-          <main className="container mx-auto px-6 py-8 bg-gray-900">
+          <main className="px-6 py-8" style={{ backgroundColor: '#0B0F19' }}>
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <Card className="bg-gray-800 border-gray-700">
@@ -151,7 +189,7 @@ const Missions = () => {
 
               <Card className="bg-gray-800 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-300">Completed</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-300">Completed Today</CardTitle>
                   <Trophy className="w-4 h-4 text-yellow-500" />
                 </CardHeader>
                 <CardContent>
@@ -161,7 +199,7 @@ const Missions = () => {
 
               <Card className="bg-gray-800 border-gray-700">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-300">Total Focus Points Earned</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-300">Focus Points Earned</CardTitle>
                   <Star className="w-4 h-4 text-yellow-500" />
                 </CardHeader>
                 <CardContent>
@@ -177,20 +215,26 @@ const Missions = () => {
                 <div>
                   <h2 className="text-xl font-bold text-white mb-4">Active Missions</h2>
                   <div className="grid gap-4">
-                    {activeMissions.map((userMission) => (
-                      <Card key={userMission.id} className="bg-gray-800 border-gray-700">
+                    {activeMissions.map((mission) => (
+                      <Card key={mission.id} className="bg-gray-800 border-gray-700">
                         <CardHeader>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
                               <Target className="w-5 h-5 text-blue-500" />
                               <div>
-                                <CardTitle className="text-white">{userMission.mission?.title}</CardTitle>
-                                <p className="text-gray-400 text-sm">{userMission.mission?.description}</p>
+                                <CardTitle className="text-white">{mission.title}</CardTitle>
+                                <p className="text-gray-400 text-sm">{mission.description}</p>
                               </div>
                             </div>
-                            <Badge variant="outline" className="text-blue-400 border-blue-400">
-                              {userMission.mission?.xp_reward} FP
-                            </Badge>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="outline" className="text-blue-400 border-blue-400">
+                                {mission.xp_reward} FP
+                              </Badge>
+                              <div className="flex items-center text-xs text-gray-400">
+                                <Clock className="w-3 h-3 mr-1" />
+                                {formatTimeRemaining(mission.expires_at)}
+                              </div>
+                            </div>
                           </div>
                         </CardHeader>
                         <CardContent>
@@ -198,11 +242,11 @@ const Missions = () => {
                             <div className="flex justify-between text-sm">
                               <span className="text-gray-400">Progress</span>
                               <span className="text-white">
-                                {userMission.current_progress}/{userMission.mission?.target_value}
+                                {mission.current_progress}/{mission.target_value}
                               </span>
                             </div>
                             <Progress 
-                              value={(userMission.current_progress / (userMission.mission?.target_value || 1)) * 100} 
+                              value={(mission.current_progress / mission.target_value) * 100} 
                               className="h-2"
                             />
                           </div>
@@ -218,28 +262,28 @@ const Missions = () => {
                 <div>
                   <h2 className="text-xl font-bold text-white mb-4">Completed Missions</h2>
                   <div className="grid gap-4">
-                    {completedMissions.map((userMission) => (
-                      <Card key={userMission.id} className="bg-gray-800 border-gray-700">
+                    {completedMissions.map((mission) => (
+                      <Card key={mission.id} className="bg-gray-800 border-gray-700">
                         <CardHeader>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
                               <Trophy className="w-5 h-5 text-yellow-500" />
                               <div>
-                                <CardTitle className="text-white">{userMission.mission?.title}</CardTitle>
-                                <p className="text-gray-400 text-sm">{userMission.mission?.description}</p>
+                                <CardTitle className="text-white">{mission.title}</CardTitle>
+                                <p className="text-gray-400 text-sm">{mission.description}</p>
                               </div>
                             </div>
                             <div className="flex items-center space-x-2">
                               <Badge variant="outline" className="text-green-400 border-green-400">
                                 Completed
                               </Badge>
-                              {!userMission.is_claimed && (
+                              {!mission.is_claimed && (
                                 <Button 
                                   size="sm"
-                                  onClick={() => claimReward(userMission.id, userMission.mission?.xp_reward || 0)}
+                                  onClick={() => claimReward(mission.id, mission.xp_reward)}
                                   className="bg-yellow-600 hover:bg-yellow-700"
                                 >
-                                  Claim {userMission.mission?.xp_reward} FP
+                                  Claim {mission.xp_reward} FP
                                 </Button>
                               )}
                             </div>
@@ -255,8 +299,16 @@ const Missions = () => {
                 <Card className="bg-gray-800 border-gray-700">
                   <CardContent className="text-center py-8">
                     <Target className="w-12 h-12 mx-auto text-gray-500 mb-4" />
-                    <h3 className="text-lg font-medium text-white mb-2">No missions yet</h3>
-                    <p className="text-gray-400">Start trading to unlock your first missions!</p>
+                    <h3 className="text-lg font-medium text-white mb-2">No missions available</h3>
+                    <p className="text-gray-400 mb-4">Generate your daily missions to get started!</p>
+                    <Button 
+                      onClick={handleGenerateNewMissions}
+                      disabled={missionLoading}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <RefreshCw className={`w-4 h-4 mr-2 ${missionLoading ? 'animate-spin' : ''}`} />
+                      Generate Daily Missions
+                    </Button>
                   </CardContent>
                 </Card>
               )}
