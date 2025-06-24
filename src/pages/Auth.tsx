@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -26,7 +25,7 @@ const Auth = () => {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             username: username || email.split('@')[0] // Use username if provided, otherwise use email prefix
           }
@@ -63,7 +62,7 @@ const Auth = () => {
       if (error) throw error;
       
       if (data.user) {
-        navigate('/dashboard');
+        navigate('/');
       }
     } catch (error: any) {
       toast({
