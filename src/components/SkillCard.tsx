@@ -4,15 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Star, Lock, Focus } from 'lucide-react';
+import { CheckCircle, Star, Lock, Focus, Crown } from 'lucide-react';
 import FocusPointsInvestment from './FocusPointsInvestment';
 
 interface SkillCardProps {
   name: string;
+  description?: string;
   level: number;
   maxLevel: number;
   xp: number;
   maxXp: number;
+  unlocked: boolean;
+  isPremium?: boolean;
   skillPoints: number;
   focusPoints: number;
   onUpgrade: (skillName: string) => void;
@@ -21,10 +24,13 @@ interface SkillCardProps {
 
 const SkillCard: React.FC<SkillCardProps> = ({
   name,
+  description,
   level,
   maxLevel,
   xp,
   maxXp,
+  unlocked,
+  isPremium,
   skillPoints,
   focusPoints,
   onUpgrade,
@@ -37,13 +43,14 @@ const SkillCard: React.FC<SkillCardProps> = ({
   const canInvestFocusPoints = focusPoints > 0 && xp < maxXp && level < maxLevel;
 
   return (
-    <Card className="bg-gray-800 border-gray-700">
+    <Card className={`bg-gray-800 border-gray-700 ${isPremium ? 'border-yellow-500' : ''}`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-white flex items-center space-x-2">
+            {isPremium && <Crown className="w-4 h-4 text-yellow-400" />}
             {isMaxed ? (
               <CheckCircle className="w-5 h-5 text-green-500" />
-            ) : level > 1 ? (
+            ) : unlocked ? (
               <Star className="w-5 h-5 text-yellow-500" />
             ) : (
               <Lock className="w-5 h-5 text-gray-500" />
@@ -51,12 +58,15 @@ const SkillCard: React.FC<SkillCardProps> = ({
             <span>{name}</span>
           </CardTitle>
           <Badge 
-            variant={level > 1 ? "default" : "secondary"}
-            className={level > 1 ? "bg-blue-600" : ""}
+            variant={unlocked ? "default" : "secondary"}
+            className={unlocked ? "bg-blue-600" : ""}
           >
             Level {level}
           </Badge>
         </div>
+        {description && (
+          <p className="text-sm text-gray-400 mt-2">{description}</p>
+        )}
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -71,7 +81,7 @@ const SkillCard: React.FC<SkillCardProps> = ({
             />
           </div>
           
-          {!isMaxed && (
+          {!isMaxed && unlocked && (
             <div className="space-y-2">
               <Button 
                 className="w-full"
@@ -96,6 +106,12 @@ const SkillCard: React.FC<SkillCardProps> = ({
                   {showFocusInvestment ? 'Hide' : 'Use Focus Points'}
                 </Button>
               )}
+            </div>
+          )}
+          
+          {!unlocked && (
+            <div className="text-center text-gray-500 font-medium">
+              🔒 Locked
             </div>
           )}
           
