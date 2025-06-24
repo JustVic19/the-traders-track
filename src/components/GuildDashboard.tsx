@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Users, TrendingUp, Trophy, MessageSquare } from 'lucide-react';
 import GuildEquityCurve from '@/components/GuildEquityCurve';
 import GuildMembersList from '@/components/GuildMembersList';
 import GuildChat from '@/components/GuildChat';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import GuildHeader from '@/components/GuildHeader';
+import GuildStatsCards from '@/components/GuildStatsCards';
 
 interface GuildDashboardProps {
   guildId: string;
@@ -140,81 +139,17 @@ const GuildDashboard = ({ guildId, onBack }: GuildDashboardProps) => {
     <div className="min-h-screen bg-[#0B0F19] p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBack}
-              className="text-gray-400 hover:text-white"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-white">{guild.name}</h1>
-              <p className="text-gray-400">{guild.description}</p>
-            </div>
-          </div>
-        </div>
+        <GuildHeader 
+          guildName={guild.name}
+          guildDescription={guild.description}
+          onBack={onBack}
+        />
 
         {/* Guild Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="bg-gray-800 border-gray-700">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Users className="w-5 h-5 text-blue-500" />
-                <div>
-                  <p className="text-2xl font-bold text-white">
-                    {members?.length || 0}
-                  </p>
-                  <p className="text-gray-400 text-sm">Members</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gray-800 border-gray-700">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="w-5 h-5 text-green-500" />
-                <div>
-                  <p className="text-2xl font-bold text-white">
-                    {guildMetrics?.total_trades || 0}
-                  </p>
-                  <p className="text-gray-400 text-sm">Total Trades</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gray-800 border-gray-700">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Trophy className="w-5 h-5 text-yellow-500" />
-                <div>
-                  <p className="text-2xl font-bold text-white">
-                    {guildMetrics?.win_rate || 0}%
-                  </p>
-                  <p className="text-gray-400 text-sm">Win Rate</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gray-800 border-gray-700">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="w-5 h-5 text-purple-500" />
-                <div>
-                  <p className="text-2xl font-bold text-white">
-                    {guildMetrics?.combined_profit_factor?.toFixed(2) || '0.00'}
-                  </p>
-                  <p className="text-gray-400 text-sm">Profit Factor</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <GuildStatsCards 
+          memberCount={members?.length || 0}
+          guildMetrics={guildMetrics}
+        />
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
