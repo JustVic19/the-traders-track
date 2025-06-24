@@ -30,14 +30,14 @@ const items = [
     icon: Home,
   },
   {
-    title: "Store",
-    url: "/store", 
-    icon: ShoppingCart,
-  },
-  {
     title: "Missions",
     url: "/missions",
     icon: Trophy,
+  },
+  {
+    title: "Store",
+    url: "/store", 
+    icon: ShoppingCart,
   },
   {
     title: "Skill Tree",
@@ -100,17 +100,41 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ profile }) => {
       <SidebarFooter className="p-4 border-t border-gray-700">
         {profile && (
           <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
-              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
+            {/* User Stats Section */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">Level</span>
+                <span className="text-white font-bold">{profile.level || 1}</span>
               </div>
-              <div className="flex-1">
-                <div className="text-white font-medium">{profile.username || 'Trader'}</div>
-                <div className="text-gray-400 text-sm">Level {profile.level || 1}</div>
+              
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">Alpha Coins</span>
+                <span className="text-yellow-500 font-bold">{profile.alpha_coins || 0}</span>
+              </div>
+              
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">Skill Points</span>
+                <span className="text-blue-500 font-bold">{profile.skill_points || 0}</span>
+              </div>
+              
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">Focus Points</span>
+                <span className="text-blue-500 font-bold">{profile.focus_points || 0}</span>
               </div>
             </div>
             
-            <AlphaCoinBalance balance={profile.alpha_coins} />
+            {/* User Profile Section */}
+            <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">
+                  {profile.username ? profile.username.charAt(0).toUpperCase() : 'V'}
+                </span>
+              </div>
+              <div className="flex-1">
+                <div className="text-white font-medium text-sm">{profile.username || 'vadenylt409@gmail.com'}</div>
+                <div className="text-gray-400 text-xs">Swinging Sarah</div>
+              </div>
+            </div>
             
             <SidebarMenuButton 
               onClick={handleSignOut}
