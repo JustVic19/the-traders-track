@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -132,7 +131,7 @@ const Dashboard = () => {
         <SidebarInset className="flex-1 w-full" style={{ backgroundColor: '#0B0F19' }}>
           {/* Main Content Header */}
           <header className="border-b border-gray-700 px-6 py-4 w-full" style={{ backgroundColor: '#1A1F2E' }}>
-            <div className="flex items-center justify-between">
+            <div className="max-w-5xl mx-auto flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center">
                   Dashboard
@@ -155,121 +154,123 @@ const Dashboard = () => {
 
           {/* Main Content */}
           <main className="w-full px-6 py-8" style={{ backgroundColor: '#0B0F19' }}>
-            {/* Hero Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-              <Card className="bg-gray-800 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-300">Total P/L</CardTitle>
-                  <TrendingUp className="w-4 h-4 text-green-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className={`text-2xl font-bold ${metrics.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {metrics.totalPnL >= 0 ? '+' : ''}${metrics.totalPnL.toFixed(2)}
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    {metrics.closedTrades} closed trades
-                  </p>
-                </CardContent>
-              </Card>
+            <div className="max-w-5xl mx-auto space-y-8">
+              {/* Hero Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-300">Total P/L</CardTitle>
+                    <TrendingUp className="w-4 h-4 text-green-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className={`text-2xl font-bold ${metrics.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {metrics.totalPnL >= 0 ? '+' : ''}${metrics.totalPnL.toFixed(2)}
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {metrics.closedTrades} closed trades
+                    </p>
+                  </CardContent>
+                </Card>
 
-              <Card className="bg-gray-800 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-300">Win Rate</CardTitle>
-                  <Percent className="w-4 h-4 text-blue-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">
-                    {metrics.winRate.toFixed(1)}%
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    {metrics.winningTrades}W / {metrics.losingTrades}L
-                  </p>
-                </CardContent>
-              </Card>
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-300">Win Rate</CardTitle>
+                    <Percent className="w-4 h-4 text-blue-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-white">
+                      {metrics.winRate.toFixed(1)}%
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {metrics.winningTrades}W / {metrics.losingTrades}L
+                    </p>
+                  </CardContent>
+                </Card>
 
-              <Card className="bg-gray-800 border-gray-700 border-blue-500">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-300">T-Track Score</CardTitle>
-                  <Award className="w-4 h-4 text-blue-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold text-blue-400">
-                    {metrics.tTrackScore}
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    Performance grade
-                  </p>
-                </CardContent>
-              </Card>
+                <Card className="bg-gray-800 border-gray-700 border-blue-500">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-300">T-Track Score</CardTitle>
+                    <Award className="w-4 h-4 text-blue-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-4xl font-bold text-blue-400">
+                      {metrics.tTrackScore}
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Performance grade
+                    </p>
+                  </CardContent>
+                </Card>
 
-              <Card className="bg-gray-800 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-300">Profit Factor</CardTitle>
-                  <BarChart3 className="w-4 h-4 text-purple-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">
-                    {metrics.profitFactor === 999 ? '∞' : metrics.profitFactor.toFixed(2)}
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    ${metrics.grossProfit.toFixed(0)} / ${metrics.grossLoss.toFixed(0)}
-                  </p>
-                </CardContent>
-              </Card>
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-300">Profit Factor</CardTitle>
+                    <BarChart3 className="w-4 h-4 text-purple-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-white">
+                      {metrics.profitFactor === 999 ? '∞' : metrics.profitFactor.toFixed(2)}
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      ${metrics.grossProfit.toFixed(0)} / ${metrics.grossLoss.toFixed(0)}
+                    </p>
+                  </CardContent>
+                </Card>
 
-              <Card className="bg-gray-800 border-gray-700">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-300">Avg. R/R</CardTitle>
-                  <Target className="w-4 h-4 text-orange-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">
-                    1:{metrics.avgRR === 999 ? '∞' : metrics.avgRR.toFixed(1)}
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    Risk to reward ratio
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Premium Features Section - Only show if user has advanced dashboard */}
-            {hasAdvancedDashboard && (
-              <div className="mb-8">
-                <PremiumDashboardFeatures trades={trades} metrics={metrics} />
-              </div>
-            )}
-
-            {/* Risk Simulator - Only show if user has the entitlement */}
-            {hasRiskSimulator && (
-              <div className="mb-8">
-                <RiskSimulator />
-              </div>
-            )}
-
-            {/* Three Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* Main Content Area - Spans 3 columns */}
-              <div className="lg:col-span-3 space-y-6">
-                {/* Equity Curve Chart with real data */}
-                <EquityCurveChart trades={trades} />
-                
-                {/* Performance Calendar with real daily trade data and date selection */}
-                <PerformanceCalendar 
-                  dailyData={dailyTradeData} 
-                  selectedDate={selectedDate}
-                  onDateSelect={handleDateSelect}
-                />
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-300">Avg. R/R</CardTitle>
+                    <Target className="w-4 h-4 text-orange-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-white">
+                      1:{metrics.avgRR === 999 ? '∞' : metrics.avgRR.toFixed(1)}
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Risk to reward ratio
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
 
-              {/* Right Sidebar - Spans 1 column */}
-              <div className="lg:col-span-1">
-                <TradingSidebar 
-                  trades={trades} 
-                  selectedDate={selectedDate}
-                  onTradeCreated={handleTradeCreated} 
-                  onClearDate={() => setSelectedDate(null)}
-                />
+              {/* Premium Features Section - Only show if user has advanced dashboard */}
+              {hasAdvancedDashboard && (
+                <div>
+                  <PremiumDashboardFeatures trades={trades} metrics={metrics} />
+                </div>
+              )}
+
+              {/* Risk Simulator - Only show if user has the entitlement */}
+              {hasRiskSimulator && (
+                <div>
+                  <RiskSimulator />
+                </div>
+              )}
+
+              {/* Three Column Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                {/* Main Content Area - Spans 3 columns */}
+                <div className="lg:col-span-3 space-y-6">
+                  {/* Equity Curve Chart with real data */}
+                  <EquityCurveChart trades={trades} />
+                  
+                  {/* Performance Calendar with real daily trade data and date selection */}
+                  <PerformanceCalendar 
+                    dailyData={dailyTradeData} 
+                    selectedDate={selectedDate}
+                    onDateSelect={handleDateSelect}
+                  />
+                </div>
+
+                {/* Right Sidebar - Spans 1 column */}
+                <div className="lg:col-span-1">
+                  <TradingSidebar 
+                    trades={trades} 
+                    selectedDate={selectedDate}
+                    onTradeCreated={handleTradeCreated} 
+                    onClearDate={() => setSelectedDate(null)}
+                  />
+                </div>
               </div>
             </div>
           </main>
