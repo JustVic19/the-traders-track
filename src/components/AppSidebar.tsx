@@ -68,7 +68,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ profile }) => {
     <Sidebar className="border-r border-gray-700" style={{ backgroundColor: '#101623' }}>
       <SidebarContent style={{ backgroundColor: '#101623' }}>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white text-xl font-bold px-4 py-6 flex items-center gap-3 mb-4">
+          <SidebarGroupLabel className="text-white text-xl font-bold px-4 py-6 flex items-center gap-3 mb-4 mt-6">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
               TT
             </div>
