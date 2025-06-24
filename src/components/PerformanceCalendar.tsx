@@ -4,27 +4,62 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Settings, Info } from 'lucide-react';
 
-const PerformanceCalendar = () => {
-  const [currentMonth, setCurrentMonth] = useState('May 2025');
+interface DailyTradeData {
+  date: string;
+  pnl: number;
+  tradeCount: number;
+  winRate: number;
+  performance: 'excellent' | 'good' | 'neutral' | 'poor' | 'terrible';
+}
+
+interface PerformanceCalendarProps {
+  dailyData?: DailyTradeData[];
+}
+
+const PerformanceCalendar: React.FC<PerformanceCalendarProps> = ({ dailyData = [] }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
   
+  const getPerformanceColor = (performance: string, pnl: number) => {
+    if (pnl === 0) return 'bg-gray-700';
+    
+    switch (performance) {
+      case 'excellent': return 'bg-green-600';
+      case 'good': return 'bg-green-500';
+      case 'neutral': return pnl > 0 ? 'bg-green-400' : 'bg-red-400';
+      case 'poor': return 'bg-red-500';
+      case 'terrible': return 'bg-red-600';
+      default: return 'bg-gray-700';
+    }
+  };
+
   const generateCalendarData = () => {
-    const daysInMonth = 31;
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const startDay = new Date(year, month, 1).getDay();
+    
     const calendarDays = [];
-    const startDay = 4; // May 1st starts on Thursday (0=Sun, 1=Mon, etc.)
     
     // Add empty cells for days before the month starts
     for (let i = 0; i < startDay; i++) {
       calendarDays.push(null);
     }
     
+    // Create a map for quick lookup of daily data
+    const dailyDataMap = new Map();
+    dailyData.forEach(data => {
+      dailyDataMap.set(data.date, data);
+    });
+    
     for (let i = 1; i <= daysInMonth; i++) {
-      const performance = Math.random() - 0.5; // Random performance between -0.5 and 0.5
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+      const dayData = dailyDataMap.get(dateStr);
+      
       calendarDays.push({
         day: i,
-        performance,
-        className: performance > 0.2 ? 'bg-green-600' : 
-                  performance > 0 ? 'bg-green-500' : 
-                  performance > -0.2 ? 'bg-red-500' : 'bg-red-600'
+        date: dateStr,
+        data: dayData,
+        className: dayData ? getPerformanceColor(dayData.performance, dayData.pnl) : 'bg-gray-800'
       });
     }
     
@@ -32,14 +67,30 @@ const PerformanceCalendar = () => {
   };
 
   const generateWeeklyStats = () => {
-    return [
-      { week: 1, earnings: 0, days: 0 },
-      { week: 2, earnings: 0, days: 0 },
-      { week: 3, earnings: 0, days: 0 },
-      { week: 4, earnings: 0, days: 0 },
-      { week: 5, earnings: 0, days: 0 },
-      { week: 6, earnings: 0, days: 0 }
-    ];
+    const weeks = [];
+    const calendarData = generateCalendarData();
+    
+    // Group calendar data into weeks
+    for (let i = 0; i < calendarData.length; i += 7) {
+      const weekDays = calendarData.slice(i, i + 7);
+      let weekPnL = 0;
+      let weekTrades = 0;
+      
+      weekDays.forEach(day => {
+        if (day?.data) {
+          weekPnL += day.data.pnl;
+          weekTrades += day.data.tradeCount;
+        }
+      });
+      
+      weeks.push({
+        week: Math.floor(i / 7) + 1,
+        earnings: weekPnL,
+        days: weekDays.filter(day => day?.data?.tradeCount > 0).length
+      });
+    }
+    
+    return weeks;
   };
 
   const calendarData = generateCalendarData();
@@ -53,9 +104,33 @@ const PerformanceCalendar = () => {
   }
 
   const navigateMonth = (direction: 'prev' | 'next') => {
-    // Add month navigation logic here
-    console.log(`Navigate ${direction}`);
+    const newDate = new Date(currentDate);
+    if (direction === 'prev') {
+      newDate.setMonth(newDate.getMonth() - 1);
+    } else {
+      newDate.setMonth(newDate.getMonth() + 1);
+    }
+    setCurrentDate(newDate);
   };
+
+  const goToCurrentMonth = () => {
+    setCurrentDate(new Date());
+  };
+
+  const currentMonthStr = currentDate.toLocaleDateString('en-US', { 
+    month: 'long', 
+    year: 'numeric' 
+  });
+
+  // Calculate monthly stats
+  const currentMonthData = dailyData.filter(data => {
+    const dataDate = new Date(data.date);
+    return dataDate.getMonth() === currentDate.getMonth() && 
+           dataDate.getFullYear() === currentDate.getFullYear();
+  });
+
+  const monthlyPnL = currentMonthData.reduce((sum, data) => sum + data.pnl, 0);
+  const monthlyDays = currentMonthData.filter(data => data.tradeCount > 0).length;
 
   return (
     <Card className="bg-gray-800 border-gray-700">
@@ -70,7 +145,7 @@ const PerformanceCalendar = () => {
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <h2 className="text-lg font-semibold text-white">{currentMonth}</h2>
+            <h2 className="text-lg font-semibold text-white">{currentMonthStr}</h2>
             <Button
               variant="ghost"
               size="sm"
@@ -82,6 +157,7 @@ const PerformanceCalendar = () => {
             <Button
               variant="ghost"
               size="sm"
+              onClick={goToCurrentMonth}
               className="text-gray-400 hover:text-white bg-gray-700 px-3 py-1 text-xs"
             >
               This month
@@ -90,8 +166,10 @@ const PerformanceCalendar = () => {
           <div className="flex items-center space-x-6">
             <div className="text-right">
               <span className="text-gray-400 text-sm">Monthly stats: </span>
-              <span className="text-white font-semibold">£0</span>
-              <span className="text-gray-400 text-sm ml-4">0 days</span>
+              <span className={`font-semibold ${monthlyPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {monthlyPnL >= 0 ? '+' : ''}${monthlyPnL.toFixed(2)}
+              </span>
+              <span className="text-gray-400 text-sm ml-4">{monthlyDays} days</span>
             </div>
             <div className="flex space-x-2">
               <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
@@ -108,7 +186,7 @@ const PerformanceCalendar = () => {
         <div className="flex space-x-4">
           {/* Calendar Grid */}
           <div className="flex-1">
-            {/* Weekday Headers - aligned with calendar columns */}
+            {/* Weekday Headers */}
             <div className="flex items-center space-x-1 mb-2">
               <div className="grid grid-cols-7 gap-1 flex-1">
                 {weekdays.map((day) => (
@@ -117,10 +195,10 @@ const PerformanceCalendar = () => {
                   </div>
                 ))}
               </div>
-              {/* Empty space to align with weekly stats column */}
               <div className="w-24 flex-shrink-0"></div>
             </div>
-            {/* Calendar Weeks with aligned Weekly Stats */}
+            
+            {/* Calendar Weeks with Weekly Stats */}
             <div className="space-y-1">
               {calendarWeeks.map((week, weekIndex) => (
                 <div key={weekIndex} className="flex items-center space-x-1">
@@ -130,18 +208,27 @@ const PerformanceCalendar = () => {
                       <div
                         key={dayIndex}
                         className={`aspect-square flex items-center justify-center text-white text-sm font-medium border border-gray-700 ${
-                          day ? `${day.className} cursor-pointer hover:opacity-80 transition-opacity` : 'bg-gray-800'
+                          day ? `${day.className} cursor-pointer hover:opacity-80 transition-opacity relative group` : 'bg-gray-800'
                         }`}
+                        title={day?.data ? `${day.date}: $${day.data.pnl.toFixed(2)} (${day.data.tradeCount} trades)` : ''}
                       >
                         {day?.day || ''}
+                        {day?.data && (
+                          <div className="absolute inset-0 flex items-end justify-end p-1">
+                            <div className="w-1 h-1 bg-white rounded-full opacity-60"></div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
+                  
                   {/* Weekly Stats aligned with this row */}
                   {weeklyStats[weekIndex] && (
                     <div className="w-24 bg-gray-700 p-3 rounded text-center flex-shrink-0">
                       <div className="text-white text-sm font-medium mb-1">Week {weeklyStats[weekIndex].week}</div>
-                      <div className="text-white font-semibold">£{weeklyStats[weekIndex].earnings}</div>
+                      <div className={`font-semibold ${weeklyStats[weekIndex].earnings >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {weeklyStats[weekIndex].earnings >= 0 ? '+' : ''}${weeklyStats[weekIndex].earnings.toFixed(2)}
+                      </div>
                       <div className="text-gray-400 text-xs">{weeklyStats[weekIndex].days} days</div>
                     </div>
                   )}

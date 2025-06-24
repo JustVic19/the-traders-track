@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
 import { useMissionProgress } from '@/hooks/useMissionProgress';
+import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AlphaCoinBalance from '@/components/AlphaCoinBalance';
 import OnboardingFlow from '@/components/OnboardingFlow';
@@ -15,7 +17,6 @@ import PerformanceCalendar from '@/components/PerformanceCalendar';
 import TradingSidebar from '@/components/TradingSidebar';
 import AppSidebar from '@/components/AppSidebar';
 
-type Trade = Tables<'trades'>;
 type Profile = Tables<'profiles'>;
 
 const Dashboard = () => {
@@ -23,29 +24,31 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { checkTradeBasedMissions } = useMissionProgress();
+  const { trades, metrics, dailyTradeData, loading: metricsLoading, refetch } = useDashboardMetrics();
 
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [statsLoading, setStatsLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   console.log('Dashboard: user =', user);
   console.log('Dashboard: loading =', loading);
+  console.log('Dashboard: metrics =', metrics);
 
   useEffect(() => {
     console.log('Dashboard useEffect: user changed', user);
     if (user) {
-      fetchUserData();
+      fetchProfile();
     } else if (!loading) {
       console.log('No user and not loading, redirecting to auth');
       navigate('/auth');
     }
   }, [user, loading, navigate]);
 
-  const fetchUserData = async () => {
-    console.log('Fetching user data for user:', user?.id);
+  const fetchProfile = async () => {
+    console.log('Fetching profile for user:', user?.id);
     try {
-      // Fetch user profile
+      setProfileLoading(true);
+      
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -56,115 +59,40 @@ const Dashboard = () => {
         console.error('Profile error:', profileError);
         throw profileError;
       }
+      
       console.log('Profile data:', profileData);
       setProfile(profileData);
 
       // Check if onboarding is needed
       if (!profileData.onboarding_completed) {
         setShowOnboarding(true);
-        return; // Don't fetch other data during onboarding
+        return;
       }
-
-      // Fetch user trades
-      const { data: tradesData, error: tradesError } = await supabase
-        .from('trades')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
-
-      if (tradesError) {
-        console.error('Trades error:', tradesError);
-        throw tradesError;
-      }
-      console.log('Trades data:', tradesData);
-      setTrades(tradesData || []);
 
       // Check and update mission progress
       await checkTradeBasedMissions();
 
     } catch (error: any) {
-      console.error('Error fetching user data:', error);
+      console.error('Error fetching profile:', error);
       toast({
         title: "Error",
-        description: "Failed to load user data",
+        description: "Failed to load profile data",
         variant: "destructive",
       });
     } finally {
-      setStatsLoading(false);
+      setProfileLoading(false);
     }
   };
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
-    // Refresh user data after onboarding
-    fetchUserData();
+    fetchProfile();
   };
 
-  // Calculate performance stats
-  const calculateStats = () => {
-    const closedTrades = trades.filter(trade => !trade.is_open && trade.profit_loss !== null);
-    const totalTrades = trades.length;
-    const totalPnL = closedTrades.reduce((sum, trade) => sum + (trade.profit_loss || 0), 0);
-    const winningTrades = closedTrades.filter(trade => (trade.profit_loss || 0) > 0);
-    const losingTrades = closedTrades.filter(trade => (trade.profit_loss || 0) < 0);
-    const winRate = closedTrades.length > 0 ? (winningTrades.length / closedTrades.length) * 100 : 0;
-    
-    // Calculate Profit Factor (gross profit / gross loss)
-    const grossProfit = winningTrades.reduce((sum, trade) => sum + (trade.profit_loss || 0), 0);
-    const grossLoss = Math.abs(losingTrades.reduce((sum, trade) => sum + (trade.profit_loss || 0), 0));
-    const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? 999 : 0;
-    
-    // Calculate Average R/R (simplified calculation)
-    const avgRR = closedTrades.length > 0 ? Math.random() * 3 + 1 : 0; // Placeholder calculation
-    
-    // Calculate T-Track Score (proprietary score)
-    const tTrackScore = calculateTTrackScore(winRate, profitFactor, totalTrades);
-
-    return {
-      totalPnL,
-      winRate,
-      totalTrades,
-      profitFactor,
-      avgRR,
-      tTrackScore
-    };
+  const handleTradeCreated = () => {
+    refetch();
+    checkTradeBasedMissions();
   };
-
-  const calculateTTrackScore = (winRate: number, profitFactor: number, totalTrades: number) => {
-    let score = 0;
-    
-    // Win rate component (0-40 points)
-    if (winRate >= 60) score += 40;
-    else if (winRate >= 50) score += 30;
-    else if (winRate >= 40) score += 20;
-    else score += 10;
-    
-    // Profit factor component (0-40 points)
-    if (profitFactor >= 2) score += 40;
-    else if (profitFactor >= 1.5) score += 30;
-    else if (profitFactor >= 1.2) score += 20;
-    else score += 10;
-    
-    // Trade count component (0-20 points)
-    if (totalTrades >= 100) score += 20;
-    else if (totalTrades >= 50) score += 15;
-    else if (totalTrades >= 20) score += 10;
-    else score += 5;
-    
-    // Convert to letter grade
-    if (score >= 90) return 'A+';
-    if (score >= 85) return 'A';
-    if (score >= 80) return 'A-';
-    if (score >= 75) return 'B+';
-    if (score >= 70) return 'B';
-    if (score >= 65) return 'B-';
-    if (score >= 60) return 'C+';
-    if (score >= 55) return 'C';
-    if (score >= 50) return 'C-';
-    return 'D';
-  };
-
-  const stats = calculateStats();
 
   // Show onboarding flow for new users
   if (showOnboarding && user) {
@@ -172,7 +100,7 @@ const Dashboard = () => {
   }
 
   // Show loading state
-  if (loading || statsLoading) {
+  if (loading || profileLoading || metricsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0B0F19' }}>
         <div className="text-lg text-white">Loading dashboard...</div>
@@ -213,9 +141,12 @@ const Dashboard = () => {
                   <TrendingUp className="w-4 h-4 text-green-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className={`text-2xl font-bold ${stats.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {stats.totalPnL >= 0 ? '+' : ''}${stats.totalPnL.toFixed(2)}
+                  <div className={`text-2xl font-bold ${metrics.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {metrics.totalPnL >= 0 ? '+' : ''}${metrics.totalPnL.toFixed(2)}
                   </div>
+                  <p className="text-xs text-gray-500">
+                    {metrics.closedTrades} closed trades
+                  </p>
                 </CardContent>
               </Card>
 
@@ -226,8 +157,11 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-white">
-                    {stats.winRate.toFixed(1)}%
+                    {metrics.winRate.toFixed(1)}%
                   </div>
+                  <p className="text-xs text-gray-500">
+                    {metrics.winningTrades}W / {metrics.losingTrades}L
+                  </p>
                 </CardContent>
               </Card>
 
@@ -238,8 +172,11 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-4xl font-bold text-blue-400">
-                    {stats.tTrackScore}
+                    {metrics.tTrackScore}
                   </div>
+                  <p className="text-xs text-gray-500">
+                    Performance grade
+                  </p>
                 </CardContent>
               </Card>
 
@@ -250,8 +187,11 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-white">
-                    {stats.profitFactor.toFixed(2)}
+                    {metrics.profitFactor === 999 ? '∞' : metrics.profitFactor.toFixed(2)}
                   </div>
+                  <p className="text-xs text-gray-500">
+                    ${metrics.grossProfit.toFixed(0)} / ${metrics.grossLoss.toFixed(0)}
+                  </p>
                 </CardContent>
               </Card>
 
@@ -262,8 +202,11 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-white">
-                    1:{stats.avgRR.toFixed(1)}
+                    1:{metrics.avgRR === 999 ? '∞' : metrics.avgRR.toFixed(1)}
                   </div>
+                  <p className="text-xs text-gray-500">
+                    Risk to reward ratio
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -275,13 +218,13 @@ const Dashboard = () => {
                 {/* Equity Curve Chart */}
                 <EquityCurveChart trades={trades} />
                 
-                {/* Performance Calendar */}
-                <PerformanceCalendar />
+                {/* Performance Calendar with daily trade data */}
+                <PerformanceCalendar dailyData={dailyTradeData} />
               </div>
 
               {/* Right Sidebar - Spans 1 column */}
               <div className="lg:col-span-1">
-                <TradingSidebar trades={trades} onTradeCreated={fetchUserData} />
+                <TradingSidebar trades={trades} onTradeCreated={handleTradeCreated} />
               </div>
             </div>
           </main>
