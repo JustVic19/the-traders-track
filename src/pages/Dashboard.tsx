@@ -90,6 +90,7 @@ const Dashboard = () => {
   };
 
   const handleTradeCreated = () => {
+    // Refetch metrics to update T-Track Score and all other metrics
     refetch();
     checkTradeBasedMissions();
   };

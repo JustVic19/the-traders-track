@@ -131,8 +131,8 @@ export const useDashboardMetrics = () => {
     const largestWin = winningTrades.length > 0 ? Math.max(...winningTrades.map(t => t.profit_loss || 0)) : 0;
     const largestLoss = losingTrades.length > 0 ? Math.abs(Math.min(...losingTrades.map(t => t.profit_loss || 0))) : 0;
 
-    // T-Track Score calculation
-    const tTrackScore = calculateTTrackScore(winRate, profitFactor, totalTrades, avgRR);
+    // T-Track Score calculation using the new formula
+    const tTrackScore = calculateTTrackScore(winRate, profitFactor);
 
     return {
       totalPnL,
@@ -213,59 +213,23 @@ export const useDashboardMetrics = () => {
   };
 };
 
-// T-Track Score calculation function
-const calculateTTrackScore = (
-  winRate: number, 
-  profitFactor: number, 
-  totalTrades: number, 
-  avgRR: number
-): string => {
-  let score = 0;
+// T-Track Score calculation function with the new formula
+const calculateTTrackScore = (winRate: number, profitFactor: number): string => {
+  // Win Rate Score: (user's win rate % / 100) * 50
+  const winRateScore = (winRate / 100) * 50;
   
-  // Win rate component (0-30 points)
-  if (winRate >= 70) score += 30;
-  else if (winRate >= 60) score += 25;
-  else if (winRate >= 50) score += 20;
-  else if (winRate >= 40) score += 15;
-  else if (winRate >= 30) score += 10;
-  else score += 5;
+  // Profit Factor Score: (min(profit factor, 2.0) / 2.0) * 50
+  // Cap profit factor at 2.0 for scoring purposes
+  const cappedProfitFactor = Math.min(profitFactor, 2.0);
+  const profitFactorScore = (cappedProfitFactor / 2.0) * 50;
   
-  // Profit factor component (0-30 points)
-  if (profitFactor >= 3) score += 30;
-  else if (profitFactor >= 2) score += 25;
-  else if (profitFactor >= 1.5) score += 20;
-  else if (profitFactor >= 1.2) score += 15;
-  else if (profitFactor >= 1) score += 10;
-  else score += 5;
-  
-  // Trade count component (0-20 points) - experience factor
-  if (totalTrades >= 200) score += 20;
-  else if (totalTrades >= 100) score += 17;
-  else if (totalTrades >= 50) score += 14;
-  else if (totalTrades >= 25) score += 10;
-  else if (totalTrades >= 10) score += 7;
-  else score += 3;
-  
-  // Risk/Reward component (0-20 points)
-  if (avgRR >= 3) score += 20;
-  else if (avgRR >= 2) score += 17;
-  else if (avgRR >= 1.5) score += 14;
-  else if (avgRR >= 1.2) score += 10;
-  else if (avgRR >= 1) score += 7;
-  else score += 3;
+  // Total Score is the sum of both scores
+  const totalScore = winRateScore + profitFactorScore;
   
   // Convert to letter grade
-  if (score >= 95) return 'A+';
-  if (score >= 90) return 'A';
-  if (score >= 85) return 'A-';
-  if (score >= 80) return 'B+';
-  if (score >= 75) return 'B';
-  if (score >= 70) return 'B-';
-  if (score >= 65) return 'C+';
-  if (score >= 60) return 'C';
-  if (score >= 55) return 'C-';
-  if (score >= 50) return 'D+';
-  if (score >= 45) return 'D';
-  if (score >= 40) return 'D-';
+  if (totalScore >= 90) return 'A';
+  if (totalScore >= 80) return 'B';
+  if (totalScore >= 70) return 'C';
+  if (totalScore >= 60) return 'D';
   return 'F';
 };
