@@ -95,7 +95,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ profile }) => {
       </SidebarContent>
       
       <SidebarFooter className="p-4 border-t border-gray-700">
-        {profile && <AlphaCoinBalance profile={profile} />}
+        {profile && <AlphaCoinBalance balance={profile.alpha_coins} />}
         <SidebarMenuButton 
           onClick={handleSignOut}
           className="w-full text-left p-3 rounded-lg text-gray-300 hover:bg-red-600 hover:text-white transition-colors mt-2"
