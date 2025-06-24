@@ -15,7 +15,6 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Tables } from '@/integrations/supabase/types';
-import AlphaCoinBalance from './AlphaCoinBalance';
 
 type Profile = Tables<'profiles'>;
 
@@ -67,7 +66,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ profile }) => {
 
   return (
     <Sidebar className="border-r border-gray-700" style={{ backgroundColor: '#101623' }}>
-      <SidebarContent>
+      <SidebarContent style={{ backgroundColor: '#101623' }}>
         <SidebarGroup>
           <SidebarGroupLabel className="text-white text-xl font-bold px-4 py-6 flex items-center gap-3">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
@@ -97,7 +96,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ profile }) => {
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="p-4 border-t border-gray-700">
+      <SidebarFooter className="p-4 border-t border-gray-700" style={{ backgroundColor: '#101623' }}>
         {profile && (
           <div className="space-y-3">
             {/* User Stats Section */}
