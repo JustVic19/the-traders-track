@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, BookOpen, BarChart3, TrendingUp, Loader2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, BarChart3, TrendingUp, Loader2, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import BacktestingInterface from '@/components/BacktestingInterface';
@@ -53,10 +53,19 @@ const StrategyLesson: React.FC<StrategyLessonProps> = ({ strategy, onBack }) => 
           description: "Failed to generate lesson content. Please try again.",
           variant: "destructive",
         });
+        setLessonContent('Unable to generate lesson content at the moment. Please try again later.');
         return;
       }
       
-      setLessonContent(data.lesson);
+      if (data && data.lesson) {
+        setLessonContent(data.lesson);
+        toast({
+          title: "Lesson Generated",
+          description: "Your personalized trading lesson is ready!",
+        });
+      } else {
+        setLessonContent('Unable to generate lesson content at the moment. Please try again later.');
+      }
       
     } catch (error: any) {
       console.error('Error in generateLessonContent:', error);
@@ -65,6 +74,7 @@ const StrategyLesson: React.FC<StrategyLessonProps> = ({ strategy, onBack }) => 
         description: "Failed to generate lesson content. Please try again.",
         variant: "destructive",
       });
+      setLessonContent('Unable to generate lesson content at the moment. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -77,6 +87,17 @@ const StrategyLesson: React.FC<StrategyLessonProps> = ({ strategy, onBack }) => 
       case 'Advanced': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const formatLessonContent = (content: string) => {
+    // Convert markdown-style formatting to HTML
+    return content
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/^\d+\.\s\*\*(.*?)\*\*/gm, '<h3 class="text-lg font-semibold text-white mt-6 mb-3">$1</h3>')
+      .replace(/^-\s(.+)/gm, '<li class="ml-4 mb-2">• $1</li>')
+      .replace(/\n\n/g, '</p><p class="mb-4">')
+      .replace(/^\s*$/gm, '');
   };
 
   return (
@@ -129,10 +150,23 @@ const StrategyLesson: React.FC<StrategyLessonProps> = ({ strategy, onBack }) => 
           <TabsContent value="lesson" className="mt-6">
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
-                <CardTitle className="text-white flex items-center">
-                  <BookOpen className="w-5 h-5 mr-2" />
-                  Strategy Lesson
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center">
+                    <BookOpen className="w-5 h-5 mr-2" />
+                    Strategy Lesson
+                  </CardTitle>
+                  {!loading && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={generateLessonContent}
+                      className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Regenerate
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 {loading ? (
@@ -143,8 +177,10 @@ const StrategyLesson: React.FC<StrategyLessonProps> = ({ strategy, onBack }) => 
                 ) : (
                   <div className="prose prose-invert max-w-none">
                     <div 
-                      className="text-gray-300 leading-relaxed whitespace-pre-wrap"
-                      dangerouslySetInnerHTML={{ __html: lessonContent.replace(/\n/g, '<br/>') }}
+                      className="text-gray-300 leading-relaxed space-y-4"
+                      dangerouslySetInnerHTML={{ 
+                        __html: `<p class="mb-4">${formatLessonContent(lessonContent)}</p>` 
+                      }}
                     />
                   </div>
                 )}
