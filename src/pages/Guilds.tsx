@@ -10,6 +10,7 @@ import { Users, Trophy, Plus, Settings } from 'lucide-react';
 import CreateGuildModal from '@/components/CreateGuildModal';
 import JoinGuildModal from '@/components/JoinGuildModal';
 import GuildDashboard from '@/components/GuildDashboard';
+import TournamentCountdown from '@/components/TournamentCountdown';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Guilds = () => {
@@ -182,6 +183,9 @@ const Guilds = () => {
           <TabsContent value="tournament" className="space-y-4">
             {currentTournament ? (
               <div className="space-y-4">
+                {/* Tournament Countdown */}
+                <TournamentCountdown endDate={currentTournament.week_end} />
+
                 {/* Tournament Info */}
                 <Card className="bg-gray-800 border-gray-700">
                   <CardHeader>

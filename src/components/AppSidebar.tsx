@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Home, BarChart3, ShoppingCart, Trophy, Zap, User, LogOut } from "lucide-react";
+import { Calendar, Home, BarChart3, ShoppingCart, Trophy, Zap, User, LogOut, Users } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -27,6 +27,11 @@ const items = [
     title: "Dashboard",
     url: "/",
     icon: Home,
+  },
+  {
+    title: "Guilds",
+    url: "/guilds",
+    icon: Users,
   },
   {
     title: "Missions",
