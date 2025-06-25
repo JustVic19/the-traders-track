@@ -1,14 +1,17 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp, Award, Coins, BarChart3, ArrowRight, Play, CheckCircle } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { TrendingUp, Award, Coins, BarChart3, ArrowRight, Play, CheckCircle, Check, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [isAnnual, setIsAnnual] = useState(false);
 
   if (loading) {
     return (
@@ -22,6 +25,9 @@ const Index = () => {
     navigate('/dashboard');
     return null;
   }
+
+  const monthlyPrice = 10;
+  const annualPrice = Math.round(monthlyPrice * 12 * 0.8); // 20% discount
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden">
@@ -150,6 +156,168 @@ const Index = () => {
                     Deep insights into your performance with detailed statistics and trend analysis.
                   </p>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 px-6 bg-gray-900/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Simple, Transparent
+              <br />
+              <span className="text-gray-400">Pricing</span>
+            </h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-8">
+              Choose the plan that fits your trading journey. Start free and upgrade when you're ready.
+            </p>
+            
+            {/* Pricing Toggle */}
+            <div className="flex items-center justify-center gap-4 mb-12">
+              <span className={`text-lg ${!isAnnual ? 'text-white' : 'text-gray-400'}`}>Monthly</span>
+              <div className="relative">
+                <Switch
+                  checked={isAnnual}
+                  onCheckedChange={setIsAnnual}
+                  className="data-[state=checked]:bg-blue-600"
+                />
+              </div>
+              <span className={`text-lg ${isAnnual ? 'text-white' : 'text-gray-400'}`}>Annual</span>
+              {isAnnual && (
+                <Badge className="bg-green-600 text-white hover:bg-green-700 ml-2">
+                  Save 20%
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <Card className="bg-gray-900/50 border-gray-800 p-8 hover:bg-gray-900/70 transition-all duration-300">
+              <CardContent className="p-0">
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold mb-4">Free</h3>
+                  <div className="mb-4">
+                    <span className="text-4xl font-bold">$0</span>
+                    <span className="text-gray-400 ml-2">forever</span>
+                  </div>
+                  <p className="text-gray-400">Perfect for getting started</p>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center">
+                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    <span>Basic trade journal</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    <span>Level system & XP</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    <span>Basic achievements</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    <span>Performance overview</span>
+                  </div>
+                  <div className="flex items-center">
+                    <X className="w-5 h-5 text-gray-500 mr-3 flex-shrink-0" />
+                    <span className="text-gray-500">Advanced analytics</span>
+                  </div>
+                  <div className="flex items-center">
+                    <X className="w-5 h-5 text-gray-500 mr-3 flex-shrink-0" />
+                    <span className="text-gray-500">AI insights</span>
+                  </div>
+                  <div className="flex items-center">
+                    <X className="w-5 h-5 text-gray-500 mr-3 flex-shrink-0" />
+                    <span className="text-gray-500">Trading Academy</span>
+                  </div>
+                  <div className="flex items-center">
+                    <X className="w-5 h-5 text-gray-500 mr-3 flex-shrink-0" />
+                    <span className="text-gray-500">Guild features</span>
+                  </div>
+                </div>
+
+                <Link to="/auth" className="block">
+                  <Button variant="outline" className="w-full border-gray-600 text-white hover:bg-gray-800">
+                    Get Started Free
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Pro Plan */}
+            <Card className="bg-gradient-to-br from-blue-900/50 to-purple-900/50 border-blue-500/50 p-8 hover:from-blue-900/70 hover:to-purple-900/70 transition-all duration-300 relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-1">
+                  Recommended
+                </Badge>
+              </div>
+              
+              <CardContent className="p-0">
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold mb-4">Pro</h3>
+                  <div className="mb-4">
+                    <span className="text-4xl font-bold">
+                      ${isAnnual ? Math.round(annualPrice / 12) : monthlyPrice}
+                    </span>
+                    <span className="text-gray-400 ml-2">
+                      /{isAnnual ? 'month' : 'month'}
+                    </span>
+                    {isAnnual && (
+                      <div className="text-sm text-green-400 mt-1">
+                        Billed annually (${annualPrice}/year)
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-gray-400">For serious traders</p>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center">
+                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    <span>Everything in Free</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    <span>Advanced analytics & insights</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    <span>AI-powered trade analysis</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    <span>Trading Academy access</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    <span>Guild features & community</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    <span>Priority support</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    <span>Unlimited trade history</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    <span>Custom reporting</span>
+                  </div>
+                </div>
+
+                <Link to="/auth" className="block">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                    Start Pro Trial
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
