@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +11,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Plus, Edit, Trash2, BookOpen } from 'lucide-react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
+import { Tables } from '@/integrations/supabase/types';
+
+type Profile = Tables<'profiles'>;
 
 interface TradingPlan {
   id: string;
@@ -26,6 +28,7 @@ interface TradingPlan {
 const Playbook = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [tradingPlans, setTradingPlans] = useState<TradingPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -39,9 +42,25 @@ const Playbook = () => {
 
   useEffect(() => {
     if (user) {
+      fetchProfile();
       fetchTradingPlans();
     }
   }, [user]);
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+    } catch (error: any) {
+      console.error('Error fetching profile:', error);
+    }
+  };
 
   const fetchTradingPlans = async () => {
     try {
@@ -176,7 +195,7 @@ const Playbook = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full" style={{ backgroundColor: '#0B0F19' }}>
-        <AppSidebar />
+        <AppSidebar profile={profile} />
         <SidebarInset className="flex-1 w-full" style={{ backgroundColor: '#0B0F19' }}>
           {/* Header */}
           <header className="border-b border-gray-700 px-6 py-4 w-full" style={{ backgroundColor: '#1A1F2E' }}>
