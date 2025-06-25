@@ -290,6 +290,9 @@ export type Database = {
           focus_points: number
           id: string
           level: number
+          mistake_pattern_date: string | null
+          mistake_pattern_insight: string | null
+          mistake_pattern_type: string | null
           onboarding_completed: boolean
           plan: string | null
           skill_points: number
@@ -310,6 +313,9 @@ export type Database = {
           focus_points?: number
           id: string
           level?: number
+          mistake_pattern_date?: string | null
+          mistake_pattern_insight?: string | null
+          mistake_pattern_type?: string | null
           onboarding_completed?: boolean
           plan?: string | null
           skill_points?: number
@@ -330,6 +336,9 @@ export type Database = {
           focus_points?: number
           id?: string
           level?: number
+          mistake_pattern_date?: string | null
+          mistake_pattern_insight?: string | null
+          mistake_pattern_type?: string | null
           onboarding_completed?: boolean
           plan?: string | null
           skill_points?: number
@@ -634,6 +643,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      analyze_user_mistake_patterns: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
       calculate_guild_metrics: {
         Args: { guild_id_param: string; start_date?: string; end_date?: string }
         Returns: Json
@@ -660,6 +673,14 @@ export type Database = {
       }
       generate_daily_missions_for_user: {
         Args: { target_user_id: string }
+        Returns: undefined
+      }
+      generate_mistake_pattern_mission: {
+        Args: {
+          target_user_id: string
+          pattern_type: string
+          pattern_description: string
+        }
         Returns: undefined
       }
       generate_weekly_insights_for_all_users: {

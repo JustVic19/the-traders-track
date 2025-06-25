@@ -1,12 +1,12 @@
-
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Loader2, Calendar, X, RefreshCw } from 'lucide-react';
+import { Sparkles, Loader2, Calendar, X, RefreshCw, AlertTriangle } from 'lucide-react';
 import TradeModal from '@/components/TradeModal';
 import { useAIInsights } from '@/hooks/useAIInsights';
 import { useWeeklyInsights } from '@/hooks/useWeeklyInsights';
+import { useMistakePatternInsights } from '@/hooks/useMistakePatternInsights';
 import { useToast } from '@/hooks/use-toast';
 
 interface TradingSidebarProps {
@@ -19,6 +19,7 @@ interface TradingSidebarProps {
 const TradingSidebar = ({ trades, selectedDate, onTradeCreated, onClearDate }: TradingSidebarProps) => {
   const { insight, loading, generateInsight } = useAIInsights();
   const { weeklyInsights, insightsDate, loading: weeklyLoading, generateManualInsight } = useWeeklyInsights();
+  const { mistakeInsight, insightDate: mistakeDate, patternType, loading: mistakeLoading, generateManualInsight: generateMistakeInsight } = useMistakePatternInsights();
   const { toast } = useToast();
 
   const handleGenerateInsight = () => {
@@ -36,6 +37,22 @@ const TradingSidebar = ({ trades, selectedDate, onTradeCreated, onClearDate }: T
       toast({
         title: "Error",
         description: "Failed to generate weekly insight. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleGenerateMistakeInsight = async () => {
+    const result = await generateMistakeInsight();
+    if (result.success) {
+      toast({
+        title: "Mistake Pattern Analysis Complete",
+        description: "Coach Vega has identified your trading patterns.",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to analyze mistake patterns. Please try again.",
         variant: "destructive",
       });
     }
@@ -152,7 +169,7 @@ const TradingSidebar = ({ trades, selectedDate, onTradeCreated, onClearDate }: T
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-white">Coach Vega's Insights</CardTitle>
-            {!weeklyLoading && weeklyInsights && (
+            {!weeklyLoading && !mistakeLoading && (weeklyInsights || mistakeInsight) && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -163,50 +180,116 @@ const TradingSidebar = ({ trades, selectedDate, onTradeCreated, onClearDate }: T
               </Button>
             )}
           </div>
-          {insightsDate && (
-            <p className="text-xs text-gray-500">
-              Weekly summary from {formatInsightsDate(insightsDate)}
-            </p>
-          )}
         </CardHeader>
         <CardContent className="space-y-4">
-          {weeklyLoading ? (
+          {/* Mistake Pattern Insight - Priority display */}
+          {mistakeLoading ? (
             <div className="flex items-center space-x-2 text-gray-400">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-sm">Loading weekly insights...</span>
+              <span className="text-sm">Analyzing trading patterns...</span>
             </div>
-          ) : weeklyInsights ? (
-            <div className="p-3 bg-blue-900/30 border border-blue-700 rounded-lg">
-              <p className="text-blue-100 text-sm leading-relaxed">{weeklyInsights}</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-gray-300 text-sm">
-                Coach Vega analyzes your weekly performance automatically. Generate a manual insight or check back later for your weekly summary.
-              </p>
+          ) : mistakeInsight ? (
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="w-4 h-4 text-orange-400" />
+                <span className="text-orange-400 text-sm font-medium">Pattern Alert</span>
+                {mistakeDate && (
+                  <span className="text-xs text-gray-500">
+                    from {formatInsightsDate(mistakeDate)}
+                  </span>
+                )}
+              </div>
+              <div className="p-3 bg-orange-900/30 border border-orange-700 rounded-lg">
+                <p className="text-orange-100 text-sm leading-relaxed">{mistakeInsight}</p>
+              </div>
               <Button 
                 variant="secondary" 
-                className="w-full bg-transparent border border-blue-500 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 transition-colors"
-                onClick={handleGenerateWeeklyInsight}
-                disabled={weeklyLoading}
+                size="sm"
+                className="w-full bg-transparent border border-orange-500 text-orange-400 hover:bg-orange-500/10 hover:text-orange-300 transition-colors"
+                onClick={handleGenerateMistakeInsight}
+                disabled={mistakeLoading}
               >
-                {weeklyLoading ? (
+                {mistakeLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating...
+                    Analyzing...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Weekly Insight
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                    Refresh Pattern Analysis
                   </>
                 )}
               </Button>
             </div>
+          ) : (
+            /* Weekly Insights fallback */
+            weeklyLoading ? (
+              <div className="flex items-center space-x-2 text-gray-400">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-sm">Loading weekly insights...</span>
+              </div>
+            ) : weeklyInsights ? (
+              <div className="space-y-3">
+                {insightsDate && (
+                  <p className="text-xs text-gray-500">
+                    Weekly summary from {formatInsightsDate(insightsDate)}
+                  </p>
+                )}
+                <div className="p-3 bg-blue-900/30 border border-blue-700 rounded-lg">
+                  <p className="text-blue-100 text-sm leading-relaxed">{weeklyInsights}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-gray-300 text-sm">
+                  Coach Vega can analyze your trading patterns and generate insights. Get personalized feedback on your performance.
+                </p>
+                <div className="space-y-2">
+                  <Button 
+                    variant="secondary" 
+                    className="w-full bg-transparent border border-orange-500 text-orange-400 hover:bg-orange-500/10 hover:text-orange-300 transition-colors"
+                    onClick={handleGenerateMistakeInsight}
+                    disabled={mistakeLoading}
+                  >
+                    {mistakeLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle className="w-4 h-4 mr-2" />
+                        Mistake Pattern Analysis
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    variant="secondary" 
+                    className="w-full bg-transparent border border-blue-500 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 transition-colors"
+                    onClick={handleGenerateWeeklyInsight}
+                    disabled={weeklyLoading}
+                  >
+                    {weeklyLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Weekly Insight
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )
           )}
           
-          {/* Fallback to on-demand insights if no weekly insights */}
-          {!weeklyInsights && !weeklyLoading && (
+          {/* Quick Insight fallback */}
+          {!mistakeInsight && !weeklyInsights && !weeklyLoading && !mistakeLoading && (
             <div className="border-t border-gray-600 pt-4">
               <p className="text-gray-400 text-xs mb-3">
                 Or generate a quick insight based on recent trades:
@@ -223,7 +306,7 @@ const TradingSidebar = ({ trades, selectedDate, onTradeCreated, onClearDate }: T
               <Button 
                 variant="secondary" 
                 size="sm"
-                className="w-full bg-transparent border border-blue-500 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 transition-colors"
+                className="w-full bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300 transition-colors"
                 onClick={handleGenerateInsight}
                 disabled={loading}
               >
