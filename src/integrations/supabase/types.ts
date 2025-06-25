@@ -405,6 +405,7 @@ export type Database = {
           quantity: number
           symbol: string
           trade_type: string
+          trading_plan_id: string | null
           updated_at: string
           user_id: string
         }
@@ -421,6 +422,7 @@ export type Database = {
           quantity: number
           symbol: string
           trade_type: string
+          trading_plan_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -437,12 +439,61 @@ export type Database = {
           quantity?: number
           symbol?: string
           trade_type?: string
+          trading_plan_id?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: [
           {
+            foreignKeyName: "trades_trading_plan_id_fkey"
+            columns: ["trading_plan_id"]
+            isOneToOne: false
+            referencedRelation: "trading_plans"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "trades_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trading_plans: {
+        Row: {
+          created_at: string
+          entry_rules: string
+          exit_rules: string
+          id: string
+          risk_management_rules: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entry_rules: string
+          exit_rules: string
+          id?: string
+          risk_management_rules: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entry_rules?: string
+          exit_rules?: string
+          id?: string
+          risk_management_rules?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trading_plans_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"

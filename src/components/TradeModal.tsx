@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useTradingPlans } from '@/hooks/useTradingPlans';
 import { Plus } from 'lucide-react';
 
 interface TradeModalProps {
@@ -18,6 +19,7 @@ interface TradeModalProps {
 const TradeModal = ({ onTradeCreated }: TradeModalProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { tradingPlans, loading: plansLoading } = useTradingPlans();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -29,7 +31,8 @@ const TradeModal = ({ onTradeCreated }: TradeModalProps) => {
     entry_date: '',
     exit_date: '',
     notes: '',
-    is_open: true
+    is_open: true,
+    trading_plan_id: ''
   });
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -70,7 +73,8 @@ const TradeModal = ({ onTradeCreated }: TradeModalProps) => {
         exit_date: formData.exit_date || null,
         notes: formData.notes || null,
         is_open: formData.is_open,
-        profit_loss
+        profit_loss,
+        trading_plan_id: formData.trading_plan_id || null
       };
 
       // Insert the trade
@@ -108,7 +112,8 @@ const TradeModal = ({ onTradeCreated }: TradeModalProps) => {
         entry_date: '',
         exit_date: '',
         notes: '',
-        is_open: true
+        is_open: true,
+        trading_plan_id: ''
       });
 
       setOpen(false);
@@ -192,6 +197,29 @@ const TradeModal = ({ onTradeCreated }: TradeModalProps) => {
                 className="bg-gray-700 border-gray-600 text-white"
               />
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="trading_plan_id" className="text-gray-300">Trading Strategy (Optional)</Label>
+            <Select 
+              value={formData.trading_plan_id} 
+              onValueChange={(value) => handleInputChange('trading_plan_id', value)}
+            >
+              <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                <SelectValue placeholder="Select a strategy from your playbook" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-700 border-gray-600">
+                <SelectItem value="" className="text-white hover:bg-gray-600">No strategy selected</SelectItem>
+                {!plansLoading && tradingPlans.map((plan) => (
+                  <SelectItem key={plan.id} value={plan.id} className="text-white hover:bg-gray-600">
+                    {plan.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {plansLoading && (
+              <p className="text-xs text-gray-500 mt-1">Loading your strategies...</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">

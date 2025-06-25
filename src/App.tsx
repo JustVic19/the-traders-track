@@ -1,63 +1,43 @@
-
+import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
-import Store from "./pages/Store";
+import Dashboard from "./pages/Dashboard";
 import Missions from "./pages/Missions";
 import SkillTree from "./pages/SkillTree";
+import Store from "./pages/Store";
 import AvatarCustomization from "./pages/AvatarCustomization";
 import Guilds from "./pages/Guilds";
+import Playbook from "./pages/Playbook";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const AppRoutes = () => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0B0F19]">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
-  }
-
-  return (
-    <Routes>
-      <Route path="/auth" element={<Auth />} />
-      {user ? (
-        <>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/store" element={<Store />} />
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/missions" element={<Missions />} />
           <Route path="/skills" element={<SkillTree />} />
+          <Route path="/store" element={<Store />} />
           <Route path="/avatar" element={<AvatarCustomization />} />
           <Route path="/guilds" element={<Guilds />} />
-        </>
-      ) : (
-        <Route path="/" element={<Index />} />
-      )}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-};
-
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  );
-}
+          <Route path="/playbook" element={<Playbook />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
