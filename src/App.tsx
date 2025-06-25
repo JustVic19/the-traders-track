@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -13,6 +14,7 @@ import Store from "./pages/Store";
 import AvatarCustomization from "./pages/AvatarCustomization";
 import Guilds from "./pages/Guilds";
 import Playbook from "./pages/Playbook";
+import Academy from "./pages/Academy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +35,7 @@ const App = () => (
           <Route path="/avatar" element={<AvatarCustomization />} />
           <Route path="/guilds" element={<Guilds />} />
           <Route path="/playbook" element={<Playbook />} />
+          <Route path="/academy" element={<Academy />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

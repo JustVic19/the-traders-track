@@ -44,6 +44,11 @@ const items = [
     icon: BookOpen,
   },
   {
+    title: "Academy",
+    url: "/academy",
+    icon: BookOpen,
+  },
+  {
     title: "Store",
     url: "/store", 
     icon: ShoppingCart,
