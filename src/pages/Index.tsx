@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -67,12 +68,12 @@ const Index = () => {
       <nav className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="text-2xl font-bold">The Traders Track</div>
+            <div className="text-2xl font-bold">The Traders Trak</div>
             <div className="flex items-center space-x-8">
               <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
               <a href="#pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</a>
               <Link to="/auth">
-                <Button variant="outline" className="border-gray-600 text-white hover:bg-white hover:text-black">
+                <Button className="bg-blue-600 text-white hover:bg-blue-700">
                   Sign In
                 </Button>
               </Link>
@@ -103,12 +104,12 @@ const Index = () => {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/auth">
-              <Button size="lg" className="bg-white text-black hover:bg-gray-200 px-8 py-4 text-lg font-semibold">
+              <Button size="lg" className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-4 text-lg font-semibold">
                 Start Your Journey
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="border-gray-600 text-white hover:bg-gray-800 px-8 py-4 text-lg">
+            <Button size="lg" className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-4 text-lg">
               <Play className="mr-2 w-5 h-5" />
               Watch Demo
             </Button>
@@ -231,9 +232,9 @@ const Index = () => {
             <Card className="bg-gray-900/50 border-gray-800 p-8 hover:bg-gray-900/70 transition-all duration-300">
               <CardContent className="p-0">
                 <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold mb-4">Free</h3>
+                  <h3 className="text-2xl font-bold mb-4 text-white">Free</h3>
                   <div className="mb-4">
-                    <span className="text-4xl font-bold">$0</span>
+                    <span className="text-4xl font-bold text-white">$0</span>
                     <span className="text-gray-400 ml-2">forever</span>
                   </div>
                   <p className="text-gray-400">Perfect for getting started</p>
@@ -242,19 +243,19 @@ const Index = () => {
                 <div className="space-y-4 mb-8">
                   <div className="flex items-center">
                     <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>Basic trade journal</span>
+                    <span className="text-white">Basic trade journal</span>
                   </div>
                   <div className="flex items-center">
                     <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>Level system & XP</span>
+                    <span className="text-white">Level system & XP</span>
                   </div>
                   <div className="flex items-center">
                     <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>Basic achievements</span>
+                    <span className="text-white">Basic achievements</span>
                   </div>
                   <div className="flex items-center">
                     <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>Performance overview</span>
+                    <span className="text-white">Performance overview</span>
                   </div>
                   <div className="flex items-center">
                     <X className="w-5 h-5 text-gray-500 mr-3 flex-shrink-0" />
@@ -275,7 +276,7 @@ const Index = () => {
                 </div>
 
                 <Link to="/auth" className="block">
-                  <Button variant="outline" className="w-full border-gray-600 text-white hover:bg-gray-800">
+                  <Button className="w-full bg-blue-600 text-white hover:bg-blue-700">
                     Get Started Free
                   </Button>
                 </Link>
@@ -292,12 +293,12 @@ const Index = () => {
               
               <CardContent className="p-0">
                 <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold mb-4">Pro</h3>
+                  <h3 className="text-2xl font-bold mb-4 text-white">Pro</h3>
                   <div className="mb-4">
-                    <span className="text-4xl font-bold">
+                    <span className="text-4xl font-bold text-white">
                       ${isAnnual ? Math.round(annualPrice / 12) : monthlyPrice}
                     </span>
-                    <span className="text-gray-400 ml-2">
+                    <span className="text-gray-300 ml-2">
                       /{isAnnual ? 'month' : 'month'}
                     </span>
                     {isAnnual && (
@@ -306,41 +307,41 @@ const Index = () => {
                       </div>
                     )}
                   </div>
-                  <p className="text-gray-400">For serious traders</p>
+                  <p className="text-gray-300">For serious traders</p>
                 </div>
 
                 <div className="space-y-4 mb-8">
                   <div className="flex items-center">
                     <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>Everything in Free</span>
+                    <span className="text-white">Everything in Free</span>
                   </div>
                   <div className="flex items-center">
                     <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>Advanced analytics & insights</span>
+                    <span className="text-white">Advanced analytics & insights</span>
                   </div>
                   <div className="flex items-center">
                     <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>AI-powered trade analysis</span>
+                    <span className="text-white">AI-powered trade analysis</span>
                   </div>
                   <div className="flex items-center">
                     <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>Trading Academy access</span>
+                    <span className="text-white">Trading Academy access</span>
                   </div>
                   <div className="flex items-center">
                     <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>Guild features & community</span>
+                    <span className="text-white">Guild features & community</span>
                   </div>
                   <div className="flex items-center">
                     <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>Priority support</span>
+                    <span className="text-white">Priority support</span>
                   </div>
                   <div className="flex items-center">
                     <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>Unlimited trade history</span>
+                    <span className="text-white">Unlimited trade history</span>
                   </div>
                   <div className="flex items-center">
                     <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>Custom reporting</span>
+                    <span className="text-white">Custom reporting</span>
                   </div>
                 </div>
 
@@ -390,7 +391,7 @@ const Index = () => {
               <h2 className="text-4xl md:text-5xl font-bold mb-8">
                 Why Choose
                 <br />
-                <span className="text-gray-400">The Traders Track?</span>
+                <span className="text-gray-400">The Traders Trak?</span>
               </h2>
               <div className="space-y-6">
                 <div className="flex items-start space-x-4">
@@ -439,7 +440,7 @@ const Index = () => {
             Join thousands of traders who are already improving their performance with our platform.
           </p>
           <Link to="/auth">
-            <Button size="lg" className="bg-white text-black hover:bg-gray-200 px-8 py-4 text-lg font-semibold">
+            <Button size="lg" className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-4 text-lg font-semibold">
               Get Started Free
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
@@ -451,10 +452,10 @@ const Index = () => {
       <footer className="border-t border-gray-800 py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <div className="text-2xl font-bold mb-4">The Traders Track</div>
+            <div className="text-2xl font-bold mb-4">The Traders Trak</div>
             <p className="text-gray-400 mb-6">Level up your trading game.</p>
             <div className="text-sm text-gray-500">
-              © 2024 The Traders Track. All rights reserved.
+              © 2024 The Traders Trak. All rights reserved.
             </div>
           </div>
         </div>

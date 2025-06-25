@@ -87,7 +87,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ profile }) => {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
               TT
             </div>
-            <span>The Traders Track</span>
+            <span>The Traders Trak</span>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
