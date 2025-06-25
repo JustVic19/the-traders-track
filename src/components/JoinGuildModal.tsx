@@ -92,7 +92,7 @@ const JoinGuildModal = ({ onSuccess }: JoinGuildModalProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-700">
+        <Button className="bg-blue-600 hover:bg-blue-700">
           <Users className="w-4 h-4 mr-2" />
           Join Guild
         </Button>
