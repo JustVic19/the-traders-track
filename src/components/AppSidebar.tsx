@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Home, BarChart3, ShoppingCart, Trophy, Zap, User, LogOut, Users } from "lucide-react";
+import { Calendar, Home, BarChart3, ShoppingCart, Trophy, Zap, User, LogOut, Users, BookOpen } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -37,6 +37,11 @@ const items = [
     title: "Missions",
     url: "/missions",
     icon: Trophy,
+  },
+  {
+    title: "My Playbook",
+    url: "/playbook",
+    icon: BookOpen,
   },
   {
     title: "Store",
