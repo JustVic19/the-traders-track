@@ -68,7 +68,7 @@ serve(async (req) => {
           continue;
         }
 
-        // Construct the prompt for Gemini
+        // Construct the detailed prompt for Gemini as requested
         const prompt = `You are Coach Vega, an expert trading mentor. A trader has a specific costly pattern in their trading behavior: "${patternData.pattern_description}". 
 
 Based on this pattern analysis from their last ${patternData.total_trades} trades, provide a personalized, encouraging insight that:
