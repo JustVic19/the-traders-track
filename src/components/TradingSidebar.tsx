@@ -23,7 +23,7 @@ const TradingSidebar = ({ trades, selectedDate, onTradeCreated, onClearDate }: T
   const { toast } = useToast();
 
   const handleGenerateInsight = () => {
-    generateInsight(trades);
+    generateInsight();
   };
 
   const handleGenerateWeeklyInsight = async () => {
