@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -7,11 +6,14 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Award, Coins, BarChart3, ArrowRight, Play, CheckCircle, Check, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [isAnnual, setIsAnnual] = useState(false);
+  const [isCreatingCheckout, setIsCreatingCheckout] = useState(false);
 
   if (loading) {
     return (
@@ -28,6 +30,36 @@ const Index = () => {
 
   const monthlyPrice = 10;
   const annualPrice = Math.round(monthlyPrice * 12 * 0.8); // 20% discount
+
+  const handleProUpgrade = async () => {
+    if (!user) {
+      // Redirect to auth if not logged in
+      navigate('/auth');
+      return;
+    }
+
+    setIsCreatingCheckout(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          priceId: isAnnual ? 'annual_plan' : 'monthly_plan',
+          isAnnual: isAnnual
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      toast.error('Failed to start checkout process. Please try again.');
+    } finally {
+      setIsCreatingCheckout(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden">
@@ -312,12 +344,14 @@ const Index = () => {
                   </div>
                 </div>
 
-                <Link to="/auth" className="block">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                    Start Pro Trial
-                    <ArrowRight className="ml-2 w-4 h-4" />
-                  </Button>
-                </Link>
+                <Button 
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={handleProUpgrade}
+                  disabled={isCreatingCheckout}
+                >
+                  {isCreatingCheckout ? 'Processing...' : 'Start Pro Trial'}
+                  {!isCreatingCheckout && <ArrowRight className="ml-2 w-4 h-4" />}
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -399,7 +433,7 @@ const Index = () => {
       <section className="py-20 px-6 bg-gradient-to-r from-blue-600/20 to-purple-600/20">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Ready to Level Up?
+            Ready to Master Your Trading?
           </h2>
           <p className="text-xl text-gray-300 mb-8">
             Join thousands of traders who are already improving their performance with our platform.
