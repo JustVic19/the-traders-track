@@ -15,6 +15,7 @@ import AvatarCustomization from "./pages/AvatarCustomization";
 import Guilds from "./pages/Guilds";
 import Playbook from "./pages/Playbook";
 import Academy from "./pages/Academy";
+import ProfileSettings from "./pages/ProfileSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/guilds" element={<Guilds />} />
           <Route path="/playbook" element={<Playbook />} />
           <Route path="/academy" element={<Academy />} />
+          <Route path="/profile" element={<ProfileSettings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

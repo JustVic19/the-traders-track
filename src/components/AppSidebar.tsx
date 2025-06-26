@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Calendar, Home, BarChart3, ShoppingCart, Trophy, Zap, User, LogOut, Users, BookOpen } from "lucide-react";
+import { Calendar, Home, BarChart3, ShoppingCart, Trophy, Zap, User, LogOut, Users, BookOpen, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -25,7 +24,7 @@ interface AppSidebarProps {
 const items = [
   {
     title: "Dashboard",
-    url: "/",
+    url: "/dashboard",
     icon: Home,
   },
   {
@@ -62,6 +61,11 @@ const items = [
     title: "Avatar",
     url: "/avatar",
     icon: User,
+  },
+  {
+    title: "Profile & Settings",
+    url: "/profile",
+    icon: Settings,
   },
 ];
 
