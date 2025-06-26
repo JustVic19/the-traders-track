@@ -16,6 +16,7 @@ import Guilds from "./pages/Guilds";
 import Playbook from "./pages/Playbook";
 import Academy from "./pages/Academy";
 import ProfileSettings from "./pages/ProfileSettings";
+import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/playbook" element={<Playbook />} />
           <Route path="/academy" element={<Academy />} />
           <Route path="/profile" element={<ProfileSettings />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
