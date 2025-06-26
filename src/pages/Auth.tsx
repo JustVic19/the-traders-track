@@ -1,43 +1,88 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail } from 'lucide-react';
+import OnboardingFlow from '@/components/OnboardingFlow';
+import { useAuth } from '@/hooks/useAuth';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Get the tab parameter from URL
+  const initialTab = searchParams.get('tab') || 'signin';
+
+  useEffect(() => {
+    // Check if user is authenticated and needs onboarding
+    const checkOnboardingStatus = async () => {
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', user.id)
+          .single();
+
+        if (profile && !profile.onboarding_completed) {
+          setShowOnboarding(true);
+        } else {
+          navigate('/dashboard');
+        }
+      }
+    };
+
+    checkOnboardingStatus();
+  }, [user, navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            username: username || email.split('@')[0] // Use username if provided, otherwise use email prefix
+            username: username || email.split('@')[0]
           }
         }
       });
       
       if (error) throw error;
       
-      toast({
-        title: "Success!",
-        description: "Check your email to confirm your account.",
-      });
+      if (data.user && !data.user.email_confirmed_at) {
+        toast({
+          title: "Success!",
+          description: "Check your email to confirm your account.",
+        });
+      } else if (data.user) {
+        // If email is already confirmed, check onboarding status
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', data.user.id)
+          .single();
+
+        if (!profile?.onboarding_completed) {
+          setShowOnboarding(true);
+        } else {
+          navigate('/dashboard');
+        }
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -62,7 +107,18 @@ const Auth = () => {
       if (error) throw error;
       
       if (data.user) {
-        navigate('/');
+        // Check if user has completed onboarding
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', data.user.id)
+          .single();
+
+        if (!profile?.onboarding_completed) {
+          setShowOnboarding(true);
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (error: any) {
       toast({
@@ -75,6 +131,21 @@ const Auth = () => {
     }
   };
 
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    navigate('/dashboard');
+  };
+
+  // Show onboarding flow if needed
+  if (showOnboarding && user) {
+    return (
+      <OnboardingFlow 
+        userId={user.id} 
+        onComplete={handleOnboardingComplete}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-gray-900 to-purple-900/20"></div>
@@ -85,7 +156,7 @@ const Auth = () => {
             <span className="text-2xl font-bold text-white">TT</span>
           </div>
           <CardTitle className="text-3xl font-bold text-white mb-2">
-            The Traders Track
+            The Traders Trak
           </CardTitle>
           <CardDescription className="text-gray-400 text-lg">
             Your personal trading journal and progress tracker
@@ -93,7 +164,7 @@ const Auth = () => {
         </CardHeader>
         
         <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
+          <Tabs defaultValue={initialTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-gray-700 border-gray-600">
               <TabsTrigger 
                 value="signin" 

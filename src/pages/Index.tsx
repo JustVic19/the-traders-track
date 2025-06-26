@@ -35,7 +35,7 @@ const Index = () => {
   const handleProUpgrade = async () => {
     if (!user) {
       // Redirect to auth if not logged in
-      navigate('/auth');
+      navigate('/auth?tab=signup');
       return;
     }
 
@@ -103,7 +103,7 @@ const Index = () => {
             unlock achievements, and master the markets like never before.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/auth">
+            <Link to="/auth?tab=signup">
               <Button size="lg" className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-4 text-lg font-semibold">
                 Start Your Journey
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -275,7 +275,7 @@ const Index = () => {
                   </div>
                 </div>
 
-                <Link to="/auth" className="block">
+                <Link to="/auth?tab=signup" className="block">
                   <Button className="w-full bg-blue-600 text-white hover:bg-blue-700">
                     Get Started Free
                   </Button>
@@ -439,7 +439,7 @@ const Index = () => {
           <p className="text-xl text-gray-300 mb-8">
             Join thousands of traders who are already improving their performance with our platform.
           </p>
-          <Link to="/auth">
+          <Link to="/auth?tab=signup">
             <Button size="lg" className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-4 text-lg font-semibold">
               Get Started Free
               <ArrowRight className="ml-2 w-5 h-5" />
