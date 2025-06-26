@@ -4,24 +4,32 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Crown, User, Mail, Calendar, Award, Coins, Zap } from 'lucide-react';
+import { Crown, User, CreditCard, Shield, Trash2 } from 'lucide-react';
 import { Tables } from '@/integrations/supabase/types';
 
 type Profile = Tables<'profiles'>;
 
 const ProfileSettings = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { subscribed, plan, loading: subscriptionLoading } = useSubscription();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [isCreatingCheckout, setIsCreatingCheckout] = useState(false);
   const [username, setUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [isCreatingCheckout, setIsCreatingCheckout] = useState(false);
+  const [isCreatingPortal, setIsCreatingPortal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -70,7 +78,7 @@ const ProfileSettings = () => {
         description: "Profile updated successfully!",
       });
 
-      fetchProfile(); // Refresh profile data
+      fetchProfile();
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
@@ -80,6 +88,102 @@ const ProfileSettings = () => {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!newPassword || !confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Please fill in both password fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Password updated successfully!",
+      });
+
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      console.error('Error updating password:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update password.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmation !== 'DELETE') {
+      toast({
+        title: "Error",
+        description: "Please type 'DELETE' to confirm account deletion.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // First delete the user's profile and related data
+      const { error: deleteError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', user?.id);
+
+      if (deleteError) throw deleteError;
+
+      // Then delete the auth user
+      const { error: authError } = await supabase.auth.admin.deleteUser(user?.id || '');
+      
+      if (authError) throw authError;
+
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been permanently deleted.",
+      });
+
+      // Sign out and redirect
+      await signOut();
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete account. Please contact support.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -116,6 +220,34 @@ const ProfileSettings = () => {
     }
   };
 
+  const handleManageSubscription = async () => {
+    if (!user) return;
+
+    setIsCreatingPortal(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        toast({
+          title: "Redirecting to billing portal...",
+          description: "Manage your subscription and billing details.",
+        });
+      }
+    } catch (error) {
+      console.error('Error creating customer portal session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to open billing portal. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingPortal(false);
+    }
+  };
+
   if (loading || subscriptionLoading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -129,83 +261,82 @@ const ProfileSettings = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Profile & Settings</h1>
-          <p className="text-gray-400">Manage your account and subscription settings</p>
+          <p className="text-gray-400">Manage your account, subscription, and security settings</p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Profile Information */}
-          <div className="lg:col-span-2 space-y-6">
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-800 border-gray-700">
+            <TabsTrigger value="profile" className="text-gray-300 data-[state=active]:text-white data-[state=active]:bg-blue-600">
+              <User className="w-4 h-4 mr-2" />
+              Profile
+            </TabsTrigger>
+            <TabsTrigger value="billing" className="text-gray-300 data-[state=active]:text-white data-[state=active]:bg-blue-600">
+              <CreditCard className="w-4 h-4 mr-2" />
+              Billing & Subscription
+            </TabsTrigger>
+            <TabsTrigger value="security" className="text-gray-300 data-[state=active]:text-white data-[state=active]:bg-blue-600">
+              <Shield className="w-4 h-4 mr-2" />
+              Account & Security
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile" className="space-y-6">
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
-                <CardTitle className="text-white flex items-center">
-                  <User className="w-5 h-5 mr-2" />
-                  Profile Information
-                </CardTitle>
+                <CardTitle className="text-white">Profile Information</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="email" className="text-gray-300">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={user?.email || ''}
-                    disabled
-                    className="bg-gray-700 border-gray-600 text-gray-400"
-                  />
+              <CardContent className="space-y-6">
+                <div className="flex items-center space-x-4">
+                  <Avatar className="w-20 h-20">
+                    <AvatarFallback className="bg-blue-600 text-white text-xl">
+                      {username ? username.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="text-white font-semibold text-lg">
+                      {username || user?.email}
+                    </h3>
+                    <p className="text-gray-400">
+                      {profile?.trader_avatar?.replace('_', ' ') || 'Trading Avatar'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="username" className="text-gray-300">Username</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Enter your username"
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                  />
-                </div>
-                <Button 
-                  onClick={handleSaveProfile}
-                  disabled={saving}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center">
-                  <Award className="w-5 h-5 mr-2" />
-                  Trading Stats
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-white">{profile?.level || 1}</div>
-                    <div className="text-gray-400 text-sm">Level</div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="email" className="text-gray-300">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={user?.email || ''}
+                      disabled
+                      className="bg-gray-700 border-gray-600 text-gray-400"
+                    />
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-white">{profile?.xp || 0}</div>
-                    <div className="text-gray-400 text-sm">XP</div>
+                  <div>
+                    <Label htmlFor="username" className="text-gray-300">Username</Label>
+                    <Input
+                      id="username"
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Enter your username"
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    />
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-yellow-500">{profile?.alpha_coins || 0}</div>
-                    <div className="text-gray-400 text-sm">Alpha Coins</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-500">{profile?.skill_points || 0}</div>
-                    <div className="text-gray-400 text-sm">Skill Points</div>
-                  </div>
+                  <Button 
+                    onClick={handleSaveProfile}
+                    disabled={saving}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </TabsContent>
 
-          {/* Subscription Card */}
-          <div className="space-y-6">
+          <TabsContent value="billing" className="space-y-6">
             <Card className={`border-gray-700 ${subscribed ? 'bg-gradient-to-br from-blue-900/50 to-purple-900/50 border-blue-500/50' : 'bg-gray-800'}`}>
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
@@ -216,24 +347,40 @@ const ProfileSettings = () => {
                     </>
                   ) : (
                     <>
-                      <Zap className="w-5 h-5 mr-2" />
+                      <CreditCard className="w-5 h-5 mr-2" />
                       Free Plan
                     </>
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 <div className="text-center">
                   <div className={`text-3xl font-bold mb-2 ${subscribed ? 'text-yellow-500' : 'text-white'}`}>
                     {subscribed ? 'PRO' : 'FREE'}
                   </div>
-                  <p className="text-gray-400 text-sm">
+                  <p className="text-gray-400">
                     {subscribed ? 'You have access to all Pro features' : 'Limited features available'}
                   </p>
                 </div>
 
-                {!subscribed && (
-                  <>
+                {subscribed ? (
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <div className="text-green-400 text-sm font-medium mb-4">✓ All Pro features unlocked</div>
+                      <Button 
+                        onClick={handleManageSubscription}
+                        disabled={isCreatingPortal}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        {isCreatingPortal ? 'Loading...' : 'Manage My Subscription'}
+                      </Button>
+                      <p className="text-gray-400 text-sm mt-2">
+                        Update payment method, view invoices, or cancel subscription
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
                     <div className="border-t border-gray-600 pt-4">
                       <h4 className="text-white font-semibold mb-3">Upgrade to unlock:</h4>
                       <ul className="space-y-2 text-sm text-gray-300">
@@ -253,47 +400,102 @@ const ProfileSettings = () => {
                       {isCreatingCheckout ? 'Processing...' : 'Upgrade to Pro'}
                       {!isCreatingCheckout && <Crown className="ml-2 w-4 h-4" />}
                     </Button>
-                  </>
-                )}
-
-                {subscribed && (
-                  <div className="text-center">
-                    <div className="text-green-400 text-sm font-medium">✓ All Pro features unlocked</div>
                   </div>
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
 
+          <TabsContent value="security" className="space-y-6">
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
-                <CardTitle className="text-white flex items-center">
-                  <Calendar className="w-5 h-5 mr-2" />
-                  Account Info
-                </CardTitle>
+                <CardTitle className="text-white">Change Password</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Member since:</span>
-                  <span className="text-white">
-                    {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}
-                  </span>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="newPassword" className="text-gray-300">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  />
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Trader Avatar:</span>
-                  <span className="text-white capitalize">
-                    {profile?.trader_avatar?.replace('_', ' ') || 'Not set'}
-                  </span>
+                <div>
+                  <Label htmlFor="confirmPassword" className="text-gray-300">Confirm New Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  />
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Trading Goal:</span>
-                  <span className="text-white text-xs">
-                    {profile?.trading_goal?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Not set'}
-                  </span>
+                <Button 
+                  onClick={handleUpdatePassword}
+                  disabled={updatingPassword || !newPassword || !confirmPassword}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {updatingPassword ? 'Updating...' : 'Update Password'}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-800 border-gray-700 border-red-500/50">
+              <CardHeader>
+                <CardTitle className="text-red-400">Danger Zone</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h4 className="text-white font-semibold mb-2">Delete Account</h4>
+                  <p className="text-gray-400 text-sm mb-4">
+                    This action cannot be undone. This will permanently delete your account and all associated data.
+                  </p>
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" className="bg-red-600 hover:bg-red-700">
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Account
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-gray-800 border-gray-700">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-white">Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-400">
+                          This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+                          <br /><br />
+                          Please type <strong className="text-red-400">DELETE</strong> to confirm:
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <Input
+                        value={deleteConfirmation}
+                        onChange={(e) => setDeleteConfirmation(e.target.value)}
+                        placeholder="Type DELETE to confirm"
+                        className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                      />
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-gray-700 text-white border-gray-600 hover:bg-gray-600">
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={handleDeleteAccount}
+                          className="bg-red-600 hover:bg-red-700"
+                          disabled={deleteConfirmation !== 'DELETE'}
+                        >
+                          Delete Account
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
