@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -71,9 +72,12 @@ const Index = () => {
             <div className="flex items-center space-x-8">
               <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
               <Link to="/pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</Link>
-              <Link to="/auth">
+              <Link to="/auth?tab=signin" className="text-gray-300 hover:text-white transition-colors">
+                Sign In
+              </Link>
+              <Link to="/auth?tab=signup">
                 <Button className="bg-blue-600 text-white hover:bg-blue-700">
-                  Sign In
+                  Get Started
                 </Button>
               </Link>
             </div>
