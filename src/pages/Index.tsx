@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, Award, Coins, BarChart3, ArrowRight, Play, CheckCircle, Check, X } from 'lucide-react';
+import { TrendingUp, Award, Coins, BarChart3, ArrowRight, Play, CheckCircle, Check, X, Star } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -191,6 +190,90 @@ const Index = () => {
                   <p className="text-gray-400 leading-relaxed">
                     Deep insights into your performance with detailed statistics and trend analysis.
                   </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 px-6 bg-gray-900/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              What Our Traders
+              <br />
+              <span className="text-gray-400">Are Saying</span>
+            </h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              Join thousands of traders who have transformed their trading with our platform.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            <Card className="bg-gray-900/50 border-gray-800 p-8 hover:bg-gray-900/70 transition-all duration-300">
+              <CardContent className="p-0">
+                <div className="flex mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <blockquote className="text-gray-300 mb-6 leading-relaxed">
+                  "The gamification aspect completely changed how I approach trading. I actually look forward to journaling my trades now, and my performance has improved dramatically!"
+                </blockquote>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white font-semibold text-sm">MR</span>
+                  </div>
+                  <div>
+                    <div className="text-white font-semibold">Mike Rodriguez</div>
+                    <div className="text-gray-400 text-sm">Day Trader</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-900/50 border-gray-800 p-8 hover:bg-gray-900/70 transition-all duration-300">
+              <CardContent className="p-0">
+                <div className="flex mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <blockquote className="text-gray-300 mb-6 leading-relaxed">
+                  "The AI insights helped me identify patterns in my trading that I never noticed before. The level system keeps me motivated to stick to my strategy."
+                </blockquote>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white font-semibold text-sm">SC</span>
+                  </div>
+                  <div>
+                    <div className="text-white font-semibold">Sarah Chen</div>
+                    <div className="text-gray-400 text-sm">Swing Trader</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-900/50 border-gray-800 p-8 hover:bg-gray-900/70 transition-all duration-300">
+              <CardContent className="p-0">
+                <div className="flex mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <blockquote className="text-gray-300 mb-6 leading-relaxed">
+                  "Finally, a trading journal that doesn't feel like a chore! The guild features and community aspect make learning from other traders so much easier."
+                </blockquote>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white font-semibold text-sm">DJ</span>
+                  </div>
+                  <div>
+                    <div className="text-white font-semibold">David Johnson</div>
+                    <div className="text-gray-400 text-sm">Options Trader</div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
