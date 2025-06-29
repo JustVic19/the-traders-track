@@ -67,7 +67,14 @@ const Index = () => {
       <nav className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="text-2xl font-bold">The Traders Trak</div>
+            <div className="text-2xl font-bold flex items-center gap-3">
+              <img 
+                src="/lovable-uploads/4559469c-3582-41ce-b24e-951a71401b3a.png" 
+                alt="The Trader Trak Logo" 
+                className="w-8 h-8 object-contain"
+              />
+              The Trader Trak
+            </div>
             <div className="flex items-center space-x-8">
               <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
               <Link to="/pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</Link>
@@ -538,10 +545,17 @@ const Index = () => {
       <footer className="border-t border-gray-800 py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <div className="text-2xl font-bold mb-4">The Traders Trak</div>
+            <div className="text-2xl font-bold mb-4 flex items-center justify-center gap-3">
+              <img 
+                src="/lovable-uploads/4559469c-3582-41ce-b24e-951a71401b3a.png" 
+                alt="The Trader Trak Logo" 
+                className="w-8 h-8 object-contain"
+              />
+              The Trader Trak
+            </div>
             <p className="text-gray-400 mb-6">Level up your trading game.</p>
             <div className="text-sm text-gray-500">
-              © 2024 The Traders Trak. All rights reserved.
+              © 2024 The Trader Trak. All rights reserved.
             </div>
           </div>
         </div>

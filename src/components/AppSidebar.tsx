@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Calendar, Home, BarChart3, ShoppingCart, Trophy, Zap, User, LogOut, Users, BookOpen, Settings } from "lucide-react";
 import {
@@ -88,10 +89,14 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ profile }) => {
       <SidebarContent style={{ backgroundColor: '#101623' }}>
         <SidebarGroup>
           <SidebarGroupLabel className="text-white text-xl font-bold px-4 py-6 flex items-center gap-3 mb-8 mt-6">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-              TT
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+              <img 
+                src="/lovable-uploads/4559469c-3582-41ce-b24e-951a71401b3a.png" 
+                alt="The Trader Trak Logo" 
+                className="w-full h-full object-contain"
+              />
             </div>
-            <span>The Traders Trak</span>
+            <span>The Trader Trak</span>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
