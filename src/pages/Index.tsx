@@ -71,7 +71,7 @@ const Index = () => {
               <img 
                 src="/lovable-uploads/4559469c-3582-41ce-b24e-951a71401b3a.png" 
                 alt="The Trader Trak Logo" 
-                className="w-8 h-8 object-contain"
+                className="w-12 h-12 object-contain"
               />
               The Trader Trak
             </div>

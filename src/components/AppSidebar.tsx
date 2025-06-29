@@ -89,7 +89,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ profile }) => {
       <SidebarContent style={{ backgroundColor: '#101623' }}>
         <SidebarGroup>
           <SidebarGroupLabel className="text-white text-xl font-bold px-4 py-6 flex items-center gap-3 mb-8 mt-6">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center">
               <img 
                 src="/lovable-uploads/4559469c-3582-41ce-b24e-951a71401b3a.png" 
                 alt="The Trader Trak Logo" 

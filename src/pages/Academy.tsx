@@ -77,15 +77,19 @@ const Academy = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [selectedStrategy, setSelectedStrategy] = useState<TradingStrategy | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {
     if (user) {
       fetchProfile();
+    } else {
+      setLoading(false);
     }
   }, [user]);
 
   const fetchProfile = async () => {
     try {
+      console.log('Fetching profile for user:', user?.id);
       const { supabase } = await import('@/integrations/supabase/client');
       const { data, error } = await supabase
         .from('profiles')
@@ -93,10 +97,17 @@ const Academy = () => {
         .eq('id', user?.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
+      console.log('Profile fetched successfully:', data);
       setProfile(data);
     } catch (error: any) {
       console.error('Error fetching profile:', error);
+      // Don't block the UI for profile fetch errors
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -113,6 +124,14 @@ const Academy = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0B0F19' }}>
+        <div className="text-lg text-white">Loading...</div>
+      </div>
+    );
+  }
 
   if (selectedStrategy) {
     return (
@@ -158,11 +177,7 @@ const Academy = () => {
                     key={category}
                     variant={selectedCategory === category ? "default" : "outline"}
                     onClick={() => setSelectedCategory(category)}
-                    className={`${
-                      selectedCategory === category 
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                        : 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
-                    }`}
+                    className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
                   >
                     {category}
                   </Button>
