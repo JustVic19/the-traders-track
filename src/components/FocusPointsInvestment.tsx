@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,7 +50,7 @@ const FocusPointsInvestment: React.FC<FocusPointsInvestmentProps> = ({
 
     try {
       const { data, error } = await supabase.rpc('invest_focus_points', {
-        skill_name_param: skillName,
+        skill_key_param: skillName,
         points_amount: pointsToInvest
       });
 

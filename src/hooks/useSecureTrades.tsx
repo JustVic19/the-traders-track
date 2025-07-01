@@ -47,9 +47,21 @@ export const useSecureTrades = () => {
     }
 
     try {
+      // Convert TradeData to JSONB format expected by the function
+      const tradeDataJsonb = {
+        symbol: tradeData.symbol,
+        trade_type: tradeData.trade_type,
+        quantity: tradeData.quantity,
+        entry_price: tradeData.entry_price,
+        exit_price: tradeData.exit_price || null,
+        entry_date: tradeData.entry_date,
+        exit_date: tradeData.exit_date || null,
+        notes: tradeData.notes || null
+      };
+
       // First, validate the trade data server-side
       const { data: validationResult, error: validationError } = await supabase.rpc('validate_and_process_trade', {
-        trade_data: tradeData
+        trade_data: tradeDataJsonb
       });
 
       if (validationError) throw validationError;

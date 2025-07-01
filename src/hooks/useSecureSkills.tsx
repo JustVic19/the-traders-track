@@ -10,6 +10,9 @@ interface Skill {
   skill_level: number;
   current_xp: number;
   max_xp: number;
+  user_id: string;
+  created_at: string;
+  unlocked_at: string;
 }
 
 export const useSecureSkills = () => {
@@ -28,13 +31,15 @@ export const useSecureSkills = () => {
 
       if (error) throw error;
 
-      // Transform data to include calculated max_xp
-      const skillsWithMaxXp = data.map(skill => ({
+      // Transform data to include default skill_level and current_xp values since they don't exist in the current schema
+      const skillsWithDefaults = data.map(skill => ({
         ...skill,
-        max_xp: skill.skill_level * 100
+        skill_level: 1, // Default skill level
+        current_xp: 0, // Default current XP
+        max_xp: 100 // Default max XP for level 1
       }));
 
-      setSkills(skillsWithMaxXp);
+      setSkills(skillsWithDefaults);
     } catch (error) {
       console.error('Error fetching skills:', error);
       toast.error('Failed to load skills');
