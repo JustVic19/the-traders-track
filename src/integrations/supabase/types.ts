@@ -742,6 +742,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      grant_focus_points: {
+        Args: { user_profile_id: string; points_amount: number }
+        Returns: undefined
+      }
       grant_monthly_pro_coins: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -749,13 +753,13 @@ export type Database = {
       grant_skill_xp: {
         Args: {
           user_profile_id: string
-          skill_name_param: string
+          skill_key_param: string
           xp_amount: number
         }
         Returns: undefined
       }
       invest_focus_points: {
-        Args: { skill_name_param: string; points_amount: number }
+        Args: { skill_key_param: string; points_amount: number }
         Returns: Json
       }
       purchase_store_item: {
@@ -767,7 +771,11 @@ export type Database = {
         Returns: undefined
       }
       upgrade_skill: {
-        Args: { user_profile_id: string; skill_name_param: string }
+        Args: { user_profile_id: string; skill_key_param: string }
+        Returns: Json
+      }
+      validate_and_process_trade: {
+        Args: { trade_data: Json }
         Returns: Json
       }
     }

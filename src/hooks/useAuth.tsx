@@ -33,7 +33,19 @@ export const useAuth = () => {
   const signOut = async () => {
     try {
       console.log('Signing out user...');
-      const { error } = await supabase.auth.signOut();
+      
+      // Clear auth state first
+      setUser(null);
+      setSession(null);
+      
+      // Clean up localStorage/sessionStorage
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
       if (error) {
         console.error('Sign out error:', error);
         throw error;
