@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { validateSymbol, validateTradeNotes } from '@/utils/inputSanitization';
+import { rateLimiter, RATE_LIMITS } from '@/utils/rateLimiting';
+import { secureLog } from '@/utils/secureLogging';
 
 interface TradeData {
   symbol: string;
@@ -46,17 +49,39 @@ export const useSecureTrades = () => {
       return null;
     }
 
+    // Rate limiting check
+    if (!rateLimiter.check(user.id, RATE_LIMITS.TRADE_CREATION)) {
+      toast.error('Too many trade creation attempts. Please wait a moment.');
+      return null;
+    }
+
+    // Client-side validation
+    if (!validateSymbol(tradeData.symbol)) {
+      toast.error('Invalid symbol format');
+      return null;
+    }
+
+    if (tradeData.quantity <= 0 || tradeData.entry_price <= 0) {
+      toast.error('Quantity and price must be positive numbers');
+      return null;
+    }
+
+    if (tradeData.exit_price !== undefined && tradeData.exit_price <= 0) {
+      toast.error('Exit price must be a positive number');
+      return null;
+    }
+
     try {
       // Convert TradeData to JSONB format expected by the function
       const tradeDataJsonb = {
-        symbol: tradeData.symbol,
+        symbol: tradeData.symbol.toUpperCase().trim(),
         trade_type: tradeData.trade_type,
         quantity: tradeData.quantity,
         entry_price: tradeData.entry_price,
         exit_price: tradeData.exit_price || null,
         entry_date: tradeData.entry_date,
         exit_date: tradeData.exit_date || null,
-        notes: tradeData.notes || null
+        notes: validateTradeNotes(tradeData.notes || '')
       };
 
       // First, validate the trade data server-side

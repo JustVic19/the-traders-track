@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { secureLog } from '@/utils/secureLogging';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -12,7 +13,7 @@ export const useAuth = () => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
+        secureLog.info('Auth state changed', { event });
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -21,7 +22,7 @@ export const useAuth = () => {
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session:', session?.user?.id);
+      secureLog.info('Initial session loaded');
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -32,7 +33,7 @@ export const useAuth = () => {
 
   const signOut = async () => {
     try {
-      console.log('Signing out user...');
+      secureLog.info('User signing out');
       
       // Clear auth state first
       setUser(null);
@@ -47,12 +48,12 @@ export const useAuth = () => {
       
       const { error } = await supabase.auth.signOut({ scope: 'global' });
       if (error) {
-        console.error('Sign out error:', error);
+        secureLog.error('Sign out error', error);
         throw error;
       }
-      console.log('Sign out successful');
+      secureLog.info('Sign out successful');
     } catch (error) {
-      console.error('Sign out failed:', error);
+      secureLog.error('Sign out failed', error);
       throw error;
     }
   };

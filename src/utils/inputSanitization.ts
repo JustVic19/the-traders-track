@@ -55,3 +55,50 @@ export const validateSymbol = (symbol: string): boolean => {
   const symbolRegex = /^[A-Za-z0-9.-]+$/;
   return symbolRegex.test(symbol) && symbol.length >= 1 && symbol.length <= 20;
 };
+
+/**
+ * Validate password strength
+ */
+export const validatePasswordStrength = (password: string): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  
+  if (password.length < 8) {
+    errors.push('Password must be at least 8 characters long');
+  }
+  
+  if (!/[a-z]/.test(password)) {
+    errors.push('Password must contain at least one lowercase letter');
+  }
+  
+  if (!/[A-Z]/.test(password)) {
+    errors.push('Password must contain at least one uppercase letter');
+  }
+  
+  if (!/\d/.test(password)) {
+    errors.push('Password must contain at least one number');
+  }
+  
+  if (!/[^a-zA-Z0-9]/.test(password)) {
+    errors.push('Password must contain at least one special character');
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
+/**
+ * Validate and sanitize trade notes
+ */
+export const validateTradeNotes = (notes: string): string => {
+  if (!notes) return '';
+  
+  // Limit length and sanitize
+  const sanitized = sanitizeInput(notes, 500);
+  
+  // Remove any potentially malicious patterns
+  return sanitized.replace(/javascript:/gi, '')
+                  .replace(/data:/gi, '')
+                  .replace(/vbscript:/gi, '');
+};

@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { rateLimiter, RATE_LIMITS } from '@/utils/rateLimiting';
+import { secureLog } from '@/utils/secureLogging';
 
 interface Skill {
   id: string;
@@ -31,15 +33,8 @@ export const useSecureSkills = () => {
 
       if (error) throw error;
 
-      // Transform data to include default skill_level and current_xp values since they don't exist in the current schema
-      const skillsWithDefaults = data.map(skill => ({
-        ...skill,
-        skill_level: 1, // Default skill level
-        current_xp: 0, // Default current XP
-        max_xp: 100 // Default max XP for level 1
-      }));
-
-      setSkills(skillsWithDefaults);
+      // Data now includes skill_level, current_xp, and max_xp from the database
+      setSkills(data || []);
     } catch (error) {
       console.error('Error fetching skills:', error);
       toast.error('Failed to load skills');
@@ -54,9 +49,20 @@ export const useSecureSkills = () => {
       return false;
     }
 
+    // Rate limiting check
+    if (!rateLimiter.check(user.id, RATE_LIMITS.SKILL_INVESTMENT)) {
+      toast.error('Too many skill investment attempts. Please wait a moment.');
+      return false;
+    }
+
     // Client-side validation
     if (points < 1 || points > 1000) {
       toast.error('Points amount must be between 1 and 1000');
+      return false;
+    }
+
+    if (!skillKey || skillKey.trim().length === 0) {
+      toast.error('Invalid skill selected');
       return false;
     }
 
