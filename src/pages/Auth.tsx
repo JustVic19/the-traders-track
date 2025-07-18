@@ -147,34 +147,34 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-gray-900 to-purple-900/20"></div>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10"></div>
       
-      <Card className="w-full max-w-md bg-gray-800 border-gray-700 shadow-2xl relative z-10">
-        <CardHeader className="text-center pb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-            <span className="text-2xl font-bold text-white">TT</span>
+      <Card className="w-full max-w-md bg-card border-border shadow-2xl relative z-10">
+        <CardHeader className="text-center pb-6 px-4 sm:px-6">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+            <span className="text-lg sm:text-2xl font-bold text-primary-foreground">TT</span>
           </div>
-          <CardTitle className="text-3xl font-bold text-white mb-2">
-            The Traders Trak
+          <CardTitle className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+            TheTraderTrak
           </CardTitle>
-          <CardDescription className="text-gray-400 text-lg">
+          <CardDescription className="text-muted-foreground text-sm sm:text-base">
             Your personal trading journal and progress tracker
           </CardDescription>
         </CardHeader>
         
-        <CardContent>
+        <CardContent className="px-4 sm:px-6">
           <Tabs defaultValue={initialTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-gray-700 border-gray-600">
+            <TabsList className="grid w-full grid-cols-2 bg-secondary border-border">
               <TabsTrigger 
                 value="signin" 
-                className="text-gray-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-sm sm:text-base"
               >
                 Sign In
               </TabsTrigger>
               <TabsTrigger 
                 value="signup" 
-                className="text-gray-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-sm sm:text-base"
               >
                 Sign Up
               </TabsTrigger>
@@ -182,7 +182,7 @@ const Auth = () => {
             
             <TabsContent value="signin" className="mt-6">
               <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div>
                     <Input
                       type="email"
@@ -190,7 +190,7 @@ const Auth = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                      className="bg-secondary/50 border-border text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary h-11 sm:h-12 text-sm sm:text-base"
                     />
                   </div>
                   <div>
@@ -200,13 +200,13 @@ const Auth = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                      className="bg-secondary/50 border-border text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary h-11 sm:h-12 text-sm sm:text-base"
                     />
                   </div>
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3" 
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 sm:py-4 text-sm sm:text-base mt-6" 
                   disabled={loading}
                 >
                   {loading ? 'Signing in...' : 'Sign In'}
@@ -216,14 +216,14 @@ const Auth = () => {
             
             <TabsContent value="signup" className="mt-6">
               <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div>
                     <Input
                       type="text"
                       placeholder="Username (optional)"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                      className="bg-secondary/50 border-border text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary h-11 sm:h-12 text-sm sm:text-base"
                     />
                   </div>
                   <div>
@@ -233,7 +233,7 @@ const Auth = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                      className="bg-secondary/50 border-border text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary h-11 sm:h-12 text-sm sm:text-base"
                     />
                   </div>
                   <div>
@@ -244,13 +244,13 @@ const Auth = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       minLength={6}
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                      className="bg-secondary/50 border-border text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary h-11 sm:h-12 text-sm sm:text-base"
                     />
                   </div>
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3" 
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 sm:py-4 text-sm sm:text-base mt-6" 
                   disabled={loading}
                 >
                   {loading ? 'Creating account...' : 'Sign Up'}
